@@ -1,3 +1,5 @@
 HEALTH_EP = "/health"
 NEIGHBORS_EP = "/neighbors"
 WEBSOCKET_EP = "/ws/chat"
+INSTRUCTION_EP = "/instruction"
+TOPIC_EP = "/topic"

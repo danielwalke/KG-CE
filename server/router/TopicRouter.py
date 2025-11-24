@@ -1,0 +1,37 @@
+from kg_embeddings.retriever.Retriever import Retriever
+from kg_embeddings.Llm import Llm, LLmHistory
+from kg_embeddings.KeywordExtraction import KeywordExtraction
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from server.constants.ServerConfig import SERVER_PREFIX
+from server.constants.Endpoints import TOPIC_EP
+from server.meta.InTopic import InTopic
+
+router = APIRouter(redirect_slashes=False)
+
+@router.post(SERVER_PREFIX + TOPIC_EP)
+async def get_topic_nodes(in_topic: InTopic):
+    llm = Llm()
+    llm_instance = LLmHistory(llm)
+    session_id = llm_instance.initialize_conversation()
+    user_input = in_topic.prompt
+
+    keyword_extractor = KeywordExtraction(llm)
+    keywords = keyword_extractor.extract_keyword(user_input)
+    print("Extracted Keywords:", keywords)
+
+    retriever = Retriever()
+    embeddings = retriever.embed_queries(keywords)
+    keyword_results = dict()
+    for embedding, keyword in zip(embeddings, keywords):
+        print(f"Keyword: {keyword}")
+        results = retriever.retrieve_similar_nodes(embedding, top_k=3)
+        keyword_results[keyword] = results
+        print("Top similar nodes:")
+        for result in results:
+            print(result)                               
+            result = str(result).replace("'", '"')  # Ensure JSON compatibility
+    return {
+        "session_id": session_id,
+        "keyword_results": keyword_results,
+        "prompt": user_input
+    }

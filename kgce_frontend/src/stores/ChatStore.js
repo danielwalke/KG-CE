@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { WEBSOCKET_URL, NEIGHBORS_EP } from '../constants/Server'
+import { TOPIC_EP } from '../constants/Server'
 export const useChatStore = defineStore('chatStore', {
   state: () => ({   message: "what connection exist between sepsis and age?",
                     websocket: undefined,
@@ -79,15 +80,57 @@ export const useChatStore = defineStore('chatStore', {
             
         };
     },
-    sendMessage() {
-        this.websocket.send(this.message);
-        const startNode = {
+    sendTopicMessage(topicMessage) {
+        this.nodes.push({
                 id: 'start-node',
                 data: { label: this.message },
                 type: 'input',
                 position: { x: 250, y: 250 }
+        });
+
+        this.topicMessages.push(topicMessage);
+        const inTopicData = {
+            "prompt": this.message
+        }
+        if (this.sessionId) {
+            inTopicData["session_id"] = this.sessionId;
+        }
+        axios.post(TOPIC_EP, inTopicData).then((response) => {
+            console.log("Topic response:", response.data);
+            const kgData = response.data["keyword_results"];
+            console.log("KG Data:", kgData);
+            for (const kw in kgData) {
+                const kw_nodes  = kgData[kw].map((n)=>({
+                    id: n["id"],
+                    data: { label: n["names"].join(", ") },
+                    type: 'input',
+                    position: { x: Math.random() * 400, y: Math.random() * 400 }
+                }));
+                const kw_edges = kw_nodes.map((n)=>({
+                    id: `start-node-${n["id"]}`,
+                    source: 'start-node',
+                    target: n["id"]
+                }));
+                
+                this.nodes.push(...kw_nodes);
+                this.edges.push(...kw_edges);
+                
             }
-        this.nodes.push(startNode);
+            this.changeCounter += 1;
+        }).catch((error) => {
+            console.error("Error sending topic message:", error);
+        });
+    },
+    sendInstructionMessage(instructionMessage) {
+        this.instructionMessages.push(instructionMessage);
+        this.websocket.send(this.message);
+    },
+    sendMessage() {
+        if(this.isTopicState){
+            this.sendTopicMessage(this.message);
+        } else {
+            this.sendInstructionMessage(this.message);
+        }
         this.message = "";
     },
     async fetchNodeNeighbors(nodeId) {
