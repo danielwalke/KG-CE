@@ -4,11 +4,11 @@ from kg_embeddings.retriever.Retriever import Retriever
 from fastapi import APIRouter
 from server.constants.ServerConfig import SERVER_PREFIX
 from server.constants.Endpoints import NEIGHBORS_EP
-
+from server.meta.InNeighborRetrieval import InNeighborRetrieval
 
 router = APIRouter(redirect_slashes=False)
-@router.get(SERVER_PREFIX + NEIGHBORS_EP + "/{node_id}/{limit}")
-async def get_neighbors(node_id: str, limit: int = 10):
+@router.post(SERVER_PREFIX + NEIGHBORS_EP)
+async def get_neighbors(in_neighbor_retrieval: InNeighborRetrieval):
     retriever = Retriever()
-    neighbors = retriever.retrieve_all_neighboring_nodes(node_id, limit=limit)
-    return {"node_id": node_id, "neighbors": neighbors}
+    neighbors = retriever.retrieve_all_neighboring_nodes(in_neighbor_retrieval.node_id, limit=in_neighbor_retrieval.max_neighbors)
+    return {"node_id": in_neighbor_retrieval.node_id, "neighbors": neighbors}

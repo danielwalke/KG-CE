@@ -140,7 +140,13 @@ export const useChatStore = defineStore('chatStore', {
         this.message = "";
     },
     async fetchNodeNeighbors(nodeId) {
-        const neighbor_nodes = await axios.get(`${NEIGHBORS_EP}/${nodeId}/10`);
+        const inNeighborData = {
+            "node_id": nodeId,
+            "max_neighbors": 10,
+            "skip": 0,
+            "topic_prompt": this.topicMessages[this.topicMessages.length - 1] || ""
+        }
+        const neighbor_nodes = await axios.post(NEIGHBORS_EP, inNeighborData);
         for (const n of neighbor_nodes.data["neighbors"]) {
             n["data"] = {
                 "label": n["names"].join(", "),
