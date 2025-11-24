@@ -31,7 +31,7 @@ function sendMessage(event) {
 <style scoped>
 @reference "../../style.css";   
 .send-container {
-    @apply w-full h-full flex gap-2 p-2 justify-center items-center bg-black/60;
+    @apply w-full flex gap-2 p-2 justify-center items-center bg-black/60;
 }
 
 .input-box {

@@ -4,8 +4,9 @@
             <div class="flex-1 messages-container">
                 {{ chatMessage }}          
             </div>
-            <div class="h-12">
-                <Send/>
+            <div class="h-28 flex flex-col ">
+                <Send class="h-14"/>
+                <ChatTypeSelection class="flex-1"/>
             </div>
         </div>
         <div class="w-1/2 h-full bg-black/20">
@@ -20,6 +21,7 @@ import Send from './Send.vue'
 import { useChatStore } from '../../stores/ChatStore'
 import { computed } from 'vue'
 import GraphInterface from './GraphInterface.vue';
+import ChatTypeSelection from './ChatTypeSelection.vue';
 
 const chatStore = useChatStore();
 chatStore.createWebsocket();

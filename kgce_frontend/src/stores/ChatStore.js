@@ -2,8 +2,17 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { WEBSOCKET_URL, NEIGHBORS_EP } from '../constants/Server'
 export const useChatStore = defineStore('chatStore', {
-  state: () => ({ message: "what connection exist between sepsis and age?", websocket: undefined, tokens: [], messages: [], nodes: [], edges: [], sessionId: undefined,
-    changeCounter: 0
+  state: () => ({   message: "what connection exist between sepsis and age?",
+                    websocket: undefined,
+                    tokens: [],
+                    messages: [],
+                    nodes: [],
+                    edges: [],
+                    sessionId: undefined,
+                    topicMessages: [],
+                    instructionMessages: [],
+                    isTopicState: true,
+                    changeCounter: 0
    }),
   getters: {
     getMessage(state) {
@@ -14,7 +23,19 @@ export const useChatStore = defineStore('chatStore', {
     },
     getChatMessage(state) {
         return state.tokens.join('')
-    }
+    },
+    getTopicMessages(state) {
+        return state.topicMessages
+    },
+    getInstructionMessages(state) { 
+        return state.instructionMessages
+    },
+    getNodes(state) {
+        return state.nodes
+    },
+    getEdges(state) {
+        return state.edges
+    },
   },
   actions: {
     setMessage(newMessage) {
@@ -87,6 +108,9 @@ export const useChatStore = defineStore('chatStore', {
             this.edges.push(edge);
         }
         this.changeCounter += 1;
-    }
+    },
+    setIsTopicState(isTopic) {
+        this.isTopicState = isTopic;
+    },
   },
 })
