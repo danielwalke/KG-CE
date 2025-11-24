@@ -81,12 +81,13 @@ export const useChatStore = defineStore('chatStore', {
         };
     },
     sendTopicMessage(topicMessage) {
-        this.nodes.push({
-                id: 'start-node',
+        const startNode = {
+                id: crypto.randomUUID().toString(), // random string uuid
                 data: { label: this.message },
                 type: 'input',
                 position: { x: 250, y: 250 }
-        });
+        }
+        this.nodes.push(startNode);
 
         this.topicMessages.push(topicMessage);
         const inTopicData = {
@@ -98,7 +99,6 @@ export const useChatStore = defineStore('chatStore', {
         axios.post(TOPIC_EP, inTopicData).then((response) => {
             console.log("Topic response:", response.data);
             const kgData = response.data["keyword_results"];
-            console.log("KG Data:", kgData);
             for (const kw in kgData) {
                 const kw_nodes  = kgData[kw].map((n)=>({
                     id: n["id"],
@@ -107,19 +107,18 @@ export const useChatStore = defineStore('chatStore', {
                     position: { x: Math.random() * 400, y: Math.random() * 400 }
                 }));
                 const kw_edges = kw_nodes.map((n)=>({
-                    id: `start-node-${n["id"]}`,
-                    source: 'start-node',
+                    id: `${startNode.id}-${n["id"]}`,
+                    source: startNode.id,
                     target: n["id"]
                 }));
-                
                 this.nodes.push(...kw_nodes);
                 this.edges.push(...kw_edges);
-                
             }
             this.changeCounter += 1;
         }).catch((error) => {
             console.error("Error sending topic message:", error);
         });
+        console.log(this.topicMessages)
     },
     sendInstructionMessage(instructionMessage) {
         this.instructionMessages.push(instructionMessage);
