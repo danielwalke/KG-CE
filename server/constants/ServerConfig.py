@@ -1,0 +1,1 @@
+SERVER_PREFIX = "/kgce_server"
