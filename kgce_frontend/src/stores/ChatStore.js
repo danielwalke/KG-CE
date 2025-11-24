@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { WEBSOCKET_URL, NEIGHBORS_EP } from '../constants/Server'
 import { TOPIC_EP } from '../constants/Server'
+import { COLORS } from '../constants/Graph'
 export const useChatStore = defineStore('chatStore', {
   state: () => ({   message: "what connection exist between sepsis and age?",
                     websocket: undefined,
@@ -98,14 +99,20 @@ export const useChatStore = defineStore('chatStore', {
         }
         axios.post(TOPIC_EP, inTopicData).then((response) => {
             console.log("Topic response:", response.data);
+            console.log(response.data["keyword_results"]);
             const kgData = response.data["keyword_results"];
             for (const kw in kgData) {
-                const kw_nodes  = kgData[kw].map((n)=>({
+                
+                const kw_nodes  = kgData[kw].map((n)=>{
+                    const color = COLORS[n["label"]] || '#CCCCCC';
+                    console.log("Node color:", color);
+                    return {
                     id: n["id"],
                     data: { label: n["names"].join(", ") },
                     type: 'input',
-                    position: { x: Math.random() * 400, y: Math.random() * 400 }
-                }));
+                    position: { x: Math.random() * 400, y: Math.random() * 400 },
+                    style: { backgroundColor: color, color: 'black' },
+                }});
                 const kw_edges = kw_nodes.map((n)=>({
                     id: `${startNode.id}-${n["id"]}`,
                     source: startNode.id,
@@ -141,6 +148,7 @@ export const useChatStore = defineStore('chatStore', {
             n["type"] = 'input'; 
             n["id"] = n["id"].toString();
             n["position"] = { x: Math.random() * 400, y: Math.random() * 400 };
+            n["style"] = { backgroundColor: COLORS[n["label"]] || '#CCCCCC', color: 'black' };
             this.nodes.push(n);
             const edge = {
                 id: `${nodeId}-${n["id"]}`,
