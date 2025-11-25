@@ -1,5 +1,5 @@
 <template>
-    <div class="h-full flex justify-center w-full overflow-y-hidden">
+    <div class="h-full flex justify-center w-full overflow-y-hidden select-none">
         <div class="w-full lg:w-4/5 flex flex-col p-8 bg-black/80 shadow-lg text-white my-4 rounded-sm overflow-y-auto">
             
             <h1 class="font-bold lg:text-6xl text-3xl text-center mb-8">Impressum & Legal</h1>
