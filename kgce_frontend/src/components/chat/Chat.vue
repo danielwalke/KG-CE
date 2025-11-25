@@ -4,14 +4,24 @@
             <div class="flex-1 messages-container">
 
                 <div class="flex flex-col gap-2"v-if="!isTopicState">
-                    <div class="instruction-container" v-for="(msg, index) in instructionMessages" :key="index">
-                        <div class="message-header"><Delete :handleDelete="()=> handleDeleteInstruction(msg, index)"/>{{ msg.type.toUpperCase() }}:</div>
-                        <div class="message">{{ msg.content }}</div>
+                    <div class="instruction-container" v-for="(msg, index) in instructionMessages" :key="index" :class="msg.type === 'response' ? 'self-start lg:max-full' : 'self-end lg:max-w-1/2'">
+                        <div class="message-header"><Delete :handleDelete="()=> handleDeleteInstruction(msg, index)" v-if="msg.type !== 'response'"/>{{ msg.type.toUpperCase() }}:</div>
+                        <div class="message">
+                            <div 
+                            v-if="msg.type === 'response'" 
+                            v-html="parseMarkdown(msg.content)"
+                            class="prose prose-sm dark:prose-invert max-w-none"
+                            ></div>
+
+                            <div v-else>
+                            {{ msg.content }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div v-else class="flex flex-col gap-2">
-                    <div class="topic-container" v-for="(msg, index) in topicMessages" :key="index">
+                    <div class="topic-container  self-end" v-for="(msg, index) in topicMessages" :key="index">
                         <div class="message-header">Topic-Request:</div>
                         <div class="message">{{ msg }}</div>
                     </div>
@@ -43,12 +53,20 @@ import { computed, ref, onUnmounted } from 'vue'
 import GraphInterface from './GraphInterface.vue';
 import ChatTypeSelection from './ChatTypeSelection.vue';
 import Delete from '../icons/Delete.vue';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
 const chatStore = useChatStore();
 chatStore.createWebsocket();
 
 const isTopicState = computed(()=> chatStore.isTopicState);
 const topicMessages = computed(()=> chatStore.topicMessages);
 const instructionMessages = computed(()=> chatStore.instructionMessages);
+
+const parseMarkdown = (content) => {
+  const rawHtml = marked.parse(content);
+  return DOMPurify.sanitize(rawHtml);
+};
     
 const containerRef = ref(null);
 const leftWidth = ref(50);
@@ -125,8 +143,12 @@ onUnmounted(() => {
     @apply bg-black/80 p-2 rounded-md text-white;
 }
 
-.topic-container, .instruction-container {
+.topic-container {
     @apply bg-black/80 p-4 max-w-1/2 rounded-md text-white self-end; 
+}
+
+.instruction-container {
+    @apply bg-black/80 p-4 rounded-md text-white max-w-full; 
 }
 
 .message-header{
