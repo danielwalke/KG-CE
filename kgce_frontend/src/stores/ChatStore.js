@@ -14,7 +14,8 @@ export const useChatStore = defineStore('chatStore', {
                     topicMessages: [],
                     instructionMessages: [],
                     isTopicState: true,
-                    changeCounter: 0
+                    changeCounter: 0,
+                    selectedNodes: [],
    }),
   getters: {
     getMessage(state) {
@@ -85,7 +86,6 @@ export const useChatStore = defineStore('chatStore', {
         const startNode = {
                 id: crypto.randomUUID().toString(), // random string uuid
                 data: { label: this.message },
-                type: 'input',
                 position: { x: 250, y: 250 }
         }
         this.nodes.push(startNode);
@@ -110,7 +110,7 @@ export const useChatStore = defineStore('chatStore', {
                     id: n["id"],
                     data: { label: n["names"].join(", ") },
                     position: { x: Math.random() * 400, y: Math.random() * 400 },
-                    style: { backgroundColor: color, color: TEXT_COLORS[n["label"]] || '#000000' },
+                    style: { backgroundColor: color, color: TEXT_COLORS[n["label"]] || '#000000', borderColor: '#000000', borderWidth: 10},
                 }});
                 const kw_edges = kw_nodes.map((n)=>({
                     id: `${startNode.id}-${n["id"]}`,
@@ -127,7 +127,11 @@ export const useChatStore = defineStore('chatStore', {
         console.log(this.topicMessages)
     },
     sendInstructionMessage(instructionMessage) {
-        this.instructionMessages.push(instructionMessage);
+        this.instructionMessages.push({
+            "role": "user",
+            "content": this.message,
+            "type": "instruction"
+        });
         this.websocket.send(this.message);
     },
     sendMessage() {
@@ -138,13 +142,33 @@ export const useChatStore = defineStore('chatStore', {
         }
         this.message = "";
     },
+    selectNode(nodeId) {
+        this.selectedNodes.push(nodeId);
+        const getEdgesWithNodesAsTarget = this.edges.filter(edge => edge.target === nodeId);
+        const selectedEdgeIds = []
+        for (const edge of getEdgesWithNodesAsTarget) {
+            edge["animated"] = true;
+            edge["style"] = { strokeWidth: 3, stroke: '#000000' };
+            selectedEdgeIds.push(edge.id);
+        }
+        const selectedNode = this.nodes.find(node => node.id === nodeId);
+        selectedNode["style"] = { ...selectedNode["style"], borderColor: '#000000', strokeWidth: 4 };
+        this.instructionMessages.push({
+            "role": "user",
+            "content": `Added context about ${selectedNode["data"]["label"]} to the conversation.`,
+            "type": "context",
+            "nodeId": nodeId,
+            "edgeIds": selectedEdgeIds
+        });        
+    },
     async fetchNodeNeighbors(nodeId) {
         const inNeighborData = {
             "node_id": nodeId,
-            "max_neighbors": 10,
+            "max_neighbors": 5,
             "skip": 0,
             "topic_prompt": this.topicMessages[this.topicMessages.length - 1] || ""
         }
+        this.selectNode(nodeId);
         const neighbor_nodes = await axios.post(NEIGHBORS_EP, inNeighborData);
         for (const n of neighbor_nodes.data["neighbors"]) {
             n["data"] = {
@@ -166,5 +190,41 @@ export const useChatStore = defineStore('chatStore', {
     setIsTopicState(isTopic) {
         this.isTopicState = isTopic;
     },
-  },
+    treeCutting(nodeId) {
+        this.nodes = this.nodes.filter(n => n.id !== nodeId);
+        const filteredEdges = this.edges.filter(e => e.source === nodeId || e.target === nodeId);
+        for (const edge of filteredEdges) {
+            if(this.selectedNodes.includes(edge.target) || this.selectedNodes.includes(edge.source)) continue
+            this.nodes = this.nodes.filter(n => n.id !== edge.source);
+            this.nodes = this.nodes.filter(n => n.id !== edge.target);
+        }
+        this.edges = this.edges.filter(e => e.source !== nodeId && e.target !== nodeId);
+        this.changeCounter += 1;
+    },
+    deleteContextInstruction(msg, index) {
+        this.instructionMessages.splice(index, 1);
+        console.log(msg)
+        const node = this.nodes.find(n => n.id === msg.nodeId);
+        console.log(node)
+        if (node) {
+            node["style"] = { ...node["style"], borderColor: '#000000', borderWidth: 1 };
+        }
+        for (const edgeId of msg.edgeIds) {
+            const edge = this.edges.find(e => e.id === edgeId);
+            if (edge) {
+                edge["animated"] = false;
+                edge["style"] = { strokeWidth: 1, stroke: '#888888'};
+            }
+            this.changeCounter += 1;
+        }
+        this.treeCutting(msg.nodeId);
+    },
+    deleteInstruction(msg, index) {
+        if (msg.type === "context") {
+            this.deleteContextInstruction(msg, index);
+        } else {
+            this.instructionMessages.splice(index, 1);
+        }
+    }
+}
 })

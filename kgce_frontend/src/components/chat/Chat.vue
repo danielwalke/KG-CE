@@ -3,8 +3,11 @@
         <div class="h-full flex flex-col bg-black/60 text-white" :style="{ width: `${leftWidth}%` }">
             <div class="flex-1 messages-container">
 
-                <div class="" v-if="!isTopicState">
-                    {{ chatMessage }}          
+                <div class="flex flex-col gap-2"v-if="!isTopicState">
+                    <div class="instruction-container" v-for="(msg, index) in instructionMessages" :key="index">
+                        <div class="message-header"><Delete :handleDelete="()=> handleDeleteInstruction(msg, index)"/>{{ msg.type.toUpperCase() }}:</div>
+                        <div class="message">{{ msg.content }}</div>
+                    </div>
                 </div>
 
                 <div v-else class="flex flex-col gap-2">
@@ -39,17 +42,21 @@ import { useChatStore } from '../../stores/ChatStore'
 import { computed, ref, onUnmounted } from 'vue'
 import GraphInterface from './GraphInterface.vue';
 import ChatTypeSelection from './ChatTypeSelection.vue';
-
+import Delete from '../icons/Delete.vue';
 const chatStore = useChatStore();
 chatStore.createWebsocket();
 
 const isTopicState = computed(()=> chatStore.isTopicState);
-const chatMessage = computed(()=> chatStore.getChatMessage);
 const topicMessages = computed(()=> chatStore.topicMessages);
+const instructionMessages = computed(()=> chatStore.instructionMessages);
     
 const containerRef = ref(null);
 const leftWidth = ref(50);
 const isDragging = ref(false);
+
+function handleDeleteInstruction(msg, index) {
+    chatStore.deleteInstruction(msg, index);
+}
 
 const setWidthFromX = (clientX) => {
   if (!containerRef.value) return;
@@ -118,12 +125,12 @@ onUnmounted(() => {
     @apply bg-black/80 p-2 rounded-md text-white;
 }
 
-.topic-container{
+.topic-container, .instruction-container {
     @apply bg-black/80 p-4 max-w-1/2 rounded-md text-white self-end; 
 }
 
 .message-header{
-    @apply font-bold text-lg lg:text-xl mb-2 italic;
+    @apply font-bold text-lg lg:text-xl mb-2 italic flex items-center gap-2 justify-start;
 }
 
 .message{
