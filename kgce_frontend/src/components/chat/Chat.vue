@@ -1,6 +1,6 @@
 <template>
-    <div class="h-full flex justify-center items-center overflow-y-hidden">
-        <div class="h-full w-1/2 flex flex-col bg-black/60 text-white">
+    <div class="h-full flex w-full justify-center items-center overflow-y-hidden" ref="containerRef">
+        <div class="h-full flex flex-col bg-black/60 text-white" :style="{ width: `${leftWidth}%` }">
             <div class="flex-1 messages-container">
 
                 <div class="" v-if="!isTopicState">
@@ -20,7 +20,13 @@
                 <ChatTypeSelection class="flex-1"/>
             </div>
         </div>
-        <div class="w-1/2 h-full bg-black/20">
+        <div 
+            class="h-full w-2 hover:w-4 bg-white hover:bg-black/40 cursor-col-resize transition-all duration-150 z-10 flex-shrink-0 touch-manipulation"
+            @mousedown="startDrag"
+            @touchstart="startTouch"
+        >
+        </div>
+        <div class="flex-1 h-full bg-black/20">
             <GraphInterface class="h-full w-full"/>
         </div>
         
@@ -30,7 +36,7 @@
 <script setup>
 import Send from './Send.vue'
 import { useChatStore } from '../../stores/ChatStore'
-import { computed } from 'vue'
+import { computed, ref, onUnmounted } from 'vue'
 import GraphInterface from './GraphInterface.vue';
 import ChatTypeSelection from './ChatTypeSelection.vue';
 
@@ -41,6 +47,66 @@ const isTopicState = computed(()=> chatStore.isTopicState);
 const chatMessage = computed(()=> chatStore.getChatMessage);
 const topicMessages = computed(()=> chatStore.topicMessages);
     
+const containerRef = ref(null);
+const leftWidth = ref(50);
+const isDragging = ref(false);
+
+const setWidthFromX = (clientX) => {
+  if (!containerRef.value) return;
+  const rect = containerRef.value.getBoundingClientRect();
+  const rawPercent = ((clientX - rect.left) / rect.width) * 100;
+  
+  if (rawPercent >= 10 && rawPercent <= 90) {
+    leftWidth.value = rawPercent;
+  }
+};
+
+const startDrag = (e) => {
+  e.stopPropagation(); 
+  e.preventDefault();
+
+  isDragging.value = true;
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', stopDrag);
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'col-resize';
+};
+
+const onMouseMove = (e) => {
+  if (!isDragging.value) return;
+  e.preventDefault();
+  setWidthFromX(e.clientX);
+};
+
+const startTouch = (e) => {
+  e.stopPropagation();
+  
+  isDragging.value = true;
+  document.addEventListener('touchmove', onTouchMove, { passive: false });
+  document.addEventListener('touchend', stopDrag);
+  document.body.style.userSelect = 'none';
+};
+
+const onTouchMove = (e) => {
+  if (!isDragging.value) return;
+  if (e.cancelable) e.preventDefault();
+  setWidthFromX(e.touches[0].clientX);
+};
+
+const stopDrag = () => {
+  isDragging.value = false;
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('mouseup', stopDrag);
+  document.removeEventListener('touchmove', onTouchMove);
+  document.removeEventListener('touchend', stopDrag);
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+};
+
+onUnmounted(() => {
+  stopDrag();
+});
+
 </script>
 
 <style scoped>
