@@ -1,5 +1,24 @@
 from kg_embeddings.connector.Neo4jConnector import Neo4jConnector
 import ollama
+import numpy as np
+
+
+def cosine_similarity(a, b):
+    a = np.array(a, dtype=float)
+    b = np.array(b, dtype=float)
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+
+def rank_by_similarity(records, prompt_embedding, top_k=None):
+    for rec in records:
+        rec["similarity"] = cosine_similarity(rec["embedding"], prompt_embedding)
+
+    ranked = sorted(records, key=lambda x: x["similarity"], reverse=True)
+
+    if top_k:
+        return ranked[:top_k]
+    return ranked
+
 class Retriever:
     def __init__(self):
         self.neo4j_connector = Neo4jConnector()
@@ -33,19 +52,53 @@ class Retriever:
         results = self.neo4j_connector.run_query(query, parameters)
         return results
     
-    def retrieve_all_neighboring_nodes(self, node_id, limit=10):
-        ## TODO SORT BY RELEVANCE BASED ON EMBEDDING SIMILARITY TO USER QUERY, TODO SKIP BASED ON NUMBER OF EXISTING FETCHED NEIGHBORS
+    def retrieve_subgraph(self, node_ids):
         query = """
-        MATCH (n)-[r]->(m)
-        WHERE elementId(n) = $node_id
-        RETURN elementId(m) as id, m.names as names, type(r) as relationship, head(labels(m)) as label
-        LIMIT $limit
+        MATCH (n)
+        WHERE elementId(n) IN $node_ids
+        OPTIONAL MATCH (n)-[r]->(m)
+        WHERE elementId(m) IN $node_ids
+        RETURN n, r, m
         """
+        parameters = {
+            "node_ids": node_ids
+        }
+        results = self.neo4j_connector.run_query(query, parameters)
+        return results
+    
+    def retrieve_all_neighboring_nodes(self, node_id, limit=10, skip =0, topic_prompt=None):
+        ## TODO MAYBE it make sense to use shortest path between all existing entities additionally besies cosine sim, TODO SKIP BASED ON NUMBER OF EXISTING FETCHED NEIGHBORS
+        print(topic_prompt)
+        if topic_prompt:
+            prompt_embedding = self.embed_query(topic_prompt)
+            query = """
+            MATCH (n)
+            WHERE elementId(n) = $node_id
+            MATCH (n)-[r]->(m)
+            RETURN
+                elementId(m) AS id,
+                m.names AS names,
+                type(r) AS relationship,
+                head(labels(m)) AS label,
+                m.embedding AS embedding
+            """
+        else:
+            query = """
+            MATCH (n)-[r]->(m)
+            WHERE elementId(n) = $node_id
+            RETURN elementId(m) as id, m.names as names, type(r) as relationship, head(labels(m)) as label
+            LIMIT $limit
+            """
         parameters = {
             "node_id": node_id,
             "limit": limit
         }
+        print(parameters)
         results = self.neo4j_connector.run_query(query, parameters)
+        if topic_prompt:
+            print("Ranking by similarity to topic prompt embedding")
+            results = rank_by_similarity(results, prompt_embedding, top_k=limit)
+        
         return results
     
 if __name__ == "__main__":
