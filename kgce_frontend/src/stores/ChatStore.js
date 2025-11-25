@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { WEBSOCKET_URL, NEIGHBORS_EP } from '../constants/Server'
 import { TOPIC_EP } from '../constants/Server'
-import { COLORS } from '../constants/Graph'
+import { COLORS, TEXT_COLORS } from '../constants/Graph'
 export const useChatStore = defineStore('chatStore', {
   state: () => ({   message: "what connection exist between sepsis and age?",
                     websocket: undefined,
@@ -109,9 +109,8 @@ export const useChatStore = defineStore('chatStore', {
                     return {
                     id: n["id"],
                     data: { label: n["names"].join(", ") },
-                    type: 'input',
                     position: { x: Math.random() * 400, y: Math.random() * 400 },
-                    style: { backgroundColor: color, color: 'black' },
+                    style: { backgroundColor: color, color: TEXT_COLORS[n["label"]] || '#000000' },
                 }});
                 const kw_edges = kw_nodes.map((n)=>({
                     id: `${startNode.id}-${n["id"]}`,
@@ -150,11 +149,10 @@ export const useChatStore = defineStore('chatStore', {
         for (const n of neighbor_nodes.data["neighbors"]) {
             n["data"] = {
                 "label": n["names"].join(", "),
-            }
-            n["type"] = 'input'; 
+            } 
             n["id"] = n["id"].toString();
             n["position"] = { x: Math.random() * 400, y: Math.random() * 400 };
-            n["style"] = { backgroundColor: COLORS[n["label"]] || '#CCCCCC', color: 'black' };
+            n["style"] = { backgroundColor: COLORS[n["label"]] || '#CCCCCC', color: TEXT_COLORS[n["label"]] || '#000000' };
             this.nodes.push(n);
             const edge = {
                 id: `${nodeId}-${n["id"]}`,

@@ -1,11 +1,24 @@
 export const COLORS = {
-  DRUG: "#E63946",          // Soft Red
-  BioConcept: "#52B788",    // Fresh Green
-  PROTEIN: "#457B9D",       // Muted Blue
-  DISEASES_Gene: "#C855A6", // Pleasant Magenta
-  RNA: "#2EC4B6",           // Teal
-  TAXON: "#FFBE0B",         // Warm Yellow
-  PATHWAY: "#9B5DE5",       // Violet
-  GENE: "#F77F00",          // Amber Orange
-  DISEASE: "#80ED99"        // Light Mint Green
+  DRUG: "#E57373",          // Muted Salmon Red
+  BioConcept: "#81C784",    // Soft Sage Green
+  PROTEIN: "#64B5F6",       // Calm Sky Blue
+  DISEASES_Gene: "#BA68C8", // Muted Orchid
+  RNA: "#4DB6AC",           // Teal Muted
+  TAXON: "#FFD54F",         // Soft Amber/Mustard
+  PATHWAY: "#9575CD",       // Deep Lavender
+  GENE: "#FF8A65",          // Burned Orange / Coral
+  DISEASE: "#AED581"        // Light Olive / Kiwi
+};
+
+// Calculated based on contrast ratio against the background
+export const TEXT_COLORS = {
+  DRUG: "#000000",          // Black (Soft Red is light enough)
+  BioConcept: "#000000",    // Black
+  PROTEIN: "#000000",       // Black
+  DISEASES_Gene: "#FFFFFF", // White (Darker purple needs white)
+  RNA: "#000000",           // Black
+  TAXON: "#000000",         // Black
+  PATHWAY: "#FFFFFF",       // White (Deep Lavender is dark)
+  GENE: "#000000",          // Black
+  DISEASE: "#000000"        // Black
 };
