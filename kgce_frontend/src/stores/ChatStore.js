@@ -51,35 +51,18 @@ export const useChatStore = defineStore('chatStore', {
         };
         this.websocket.onmessage = (event) => {
             const token = event.data;
-            console.log("Received token:", token);
-            if (token.startsWith("[KG_RESULT]")) {
-                const kgData = token.replace("[KG_RESULT]", "").trim();
-                console.log(kgData);
-                const node = JSON.parse(kgData);
-                console.log("Knowledge Graph Node:", node);
-                node["id"] = node["id"].toString();
-                node["data"] = {
-                    "label": node["names"].join(", "),
-                }
-                node["type"] = 'input'; 
-                node["position"] = { x: Math.random() * 400, y: Math.random() * 400 };
-                this.nodes.push(node);
-                this.edges.push({
-                    id: `start-node-${node["id"]}`,
-                    source: 'start-node',
-                    target: node["id"]
+            if (token.startsWith("[START]")) {
+                this.instructionMessages.push({
+                    "id": crypto.randomUUID().toString(),
+                    "role": "assistant",
+                    "content": "",
+                    "type": "response"
                 });
-                console.log("Knowledge Graph Data:", kgData);
-            }
-            else if (token.startsWith("[SESSION_ID]")) {
-                const sessionId = token.replace("[SESSION_ID]", "").trim();
-                this.sessionId = sessionId;
             }
             else{
-                this.tokens.push(token);
+                this.instructionMessages[this.instructionMessages.length - 1].content += token;
             }
             this.changeCounter += 1;
-            
         };
     },
     sendTopicMessage(topicMessage) {
@@ -128,11 +111,19 @@ export const useChatStore = defineStore('chatStore', {
     },
     sendInstructionMessage(instructionMessage) {
         this.instructionMessages.push({
+            "id": crypto.randomUUID().toString(),
             "role": "user",
             "content": this.message,
             "type": "instruction"
         });
-        this.websocket.send(this.message);
+        console.log(JSON.stringify({
+            "prompt": this.message,
+            "node_ids": this.selectedNodes
+        }));
+        this.websocket.send(JSON.stringify({
+            "prompt": this.message,
+            "node_ids": this.selectedNodes
+        }));
     },
     sendMessage() {
         if(this.isTopicState){
@@ -154,6 +145,7 @@ export const useChatStore = defineStore('chatStore', {
         const selectedNode = this.nodes.find(node => node.id === nodeId);
         selectedNode["style"] = { ...selectedNode["style"], borderColor: '#000000', strokeWidth: 4 };
         this.instructionMessages.push({
+            "id": crypto.randomUUID().toString(),
             "role": "user",
             "content": `Added context about ${selectedNode["data"]["label"]} to the conversation.`,
             "type": "context",
