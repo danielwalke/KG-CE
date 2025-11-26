@@ -4,7 +4,7 @@ import { WEBSOCKET_URL, NEIGHBORS_EP } from '../constants/Server'
 import { TOPIC_EP } from '../constants/Server'
 import { COLORS, TEXT_COLORS } from '../constants/Graph'
 export const useChatStore = defineStore('chatStore', {
-  state: () => ({   message: "what connection exist between sepsis and age?",
+  state: () => ({   message: "Sepsis & Diabetes",
                     websocket: undefined,
                     tokens: [],
                     messages: [],
@@ -16,6 +16,7 @@ export const useChatStore = defineStore('chatStore', {
                     isTopicState: true,
                     changeCounter: 0,
                     selectedNodes: [],
+                    isLoading: false
    }),
   getters: {
     getMessage(state) {
@@ -39,8 +40,14 @@ export const useChatStore = defineStore('chatStore', {
     getEdges(state) {
         return state.edges
     },
+    getIsLoading(state) {
+        return state.isLoading
+    }
   },
   actions: {
+    setIsLoading(isLoading) {
+        this.isLoading = isLoading;
+    },
     setMessage(newMessage) {
         this.message = newMessage
     },
@@ -91,7 +98,7 @@ export const useChatStore = defineStore('chatStore', {
                     console.log("Node color:", color);
                     return {
                     id: n["id"],
-                    data: { label: n["names"].join(", ") },
+                    data: { label: n["name"]},
                     position: { x: Math.random() * 400, y: Math.random() * 400 },
                     style: { backgroundColor: color, color: TEXT_COLORS[n["label"]] || '#000000', borderColor: '#000000', borderWidth: 10},
                 }});
@@ -104,8 +111,11 @@ export const useChatStore = defineStore('chatStore', {
                 this.edges.push(...kw_edges);
             }
             this.changeCounter += 1;
+            
         }).catch((error) => {
             console.error("Error sending topic message:", error);
+        }).finally(() => {
+            this.setIsLoading(false);
         });
         console.log(this.topicMessages)
     },
@@ -126,12 +136,14 @@ export const useChatStore = defineStore('chatStore', {
         }));
     },
     sendMessage() {
+        this.setIsLoading(true);
         if(this.isTopicState){
             this.sendTopicMessage(this.message);
         } else {
             this.sendInstructionMessage(this.message);
         }
         this.message = "";
+        
     },
     selectNode(nodeId) {
         this.selectedNodes.push(nodeId);
@@ -154,6 +166,7 @@ export const useChatStore = defineStore('chatStore', {
         });        
     },
     async fetchNodeNeighbors(nodeId) {
+        this.setIsLoading(true);
         const inNeighborData = {
             "node_id": nodeId,
             "max_neighbors": 5,
@@ -164,7 +177,7 @@ export const useChatStore = defineStore('chatStore', {
         const neighbor_nodes = await axios.post(NEIGHBORS_EP, inNeighborData);
         for (const n of neighbor_nodes.data["neighbors"]) {
             n["data"] = {
-                "label": n["names"].join(", "),
+                "label": n["name"],
             } 
             n["id"] = n["id"].toString();
             n["position"] = { x: Math.random() * 400, y: Math.random() * 400 };
@@ -178,6 +191,7 @@ export const useChatStore = defineStore('chatStore', {
             this.edges.push(edge);
         }
         this.changeCounter += 1;
+        this.setIsLoading(false);
     },
     setIsTopicState(isTopic) {
         this.isTopicState = isTopic;
