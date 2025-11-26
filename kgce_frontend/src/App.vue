@@ -4,6 +4,7 @@ import LoadingScreen from './components/loader/LoadingScreen.vue';
 import { RouterView } from 'vue-router';
 import { useChatStore } from './stores/ChatStore.js';
 import { computed } from 'vue';
+import ConfigurationModal from './components/modal/ConfigurationModal.vue';
 
 const chatStore = useChatStore();
 const isLoading = computed(() => chatStore.getIsLoading);
@@ -14,6 +15,7 @@ const isLoading = computed(() => chatStore.getIsLoading);
     <Header class="h-12" />
     <RouterView class="flex-1" />
     <LoadingScreen :show="isLoading" message="Loading" />
+    <ConfigurationModal/>
   </div>
 </template>
 

@@ -3,6 +3,8 @@ import axios from 'axios'
 import { WEBSOCKET_URL, NEIGHBORS_EP } from '../constants/Server'
 import { TOPIC_EP } from '../constants/Server'
 import { COLORS, TEXT_COLORS } from '../constants/Graph'
+import { useGraphSchemaStore } from './GraphSchemaStore.js'
+
 export const useChatStore = defineStore('chatStore', {
   state: () => ({   message: "Sepsis & Diabetes",
                     websocket: undefined,
@@ -16,7 +18,8 @@ export const useChatStore = defineStore('chatStore', {
                     isTopicState: true,
                     changeCounter: 0,
                     selectedNodes: [],
-                    isLoading: false
+                    isLoading: false,
+                    isConfigurationOpen: false,
    }),
   getters: {
     getMessage(state) {
@@ -42,9 +45,15 @@ export const useChatStore = defineStore('chatStore', {
     },
     getIsLoading(state) {
         return state.isLoading
+    },
+    getIsConfigurationOpen(state) {
+        return state.isConfigurationOpen
     }
   },
   actions: {
+    setIsConfigurationOpen(isOpen) {
+        this.isConfigurationOpen = isOpen;
+    },
     setIsLoading(isLoading) {
         this.isLoading = isLoading;
     },
@@ -73,6 +82,9 @@ export const useChatStore = defineStore('chatStore', {
         };
     },
     sendTopicMessage(topicMessage) {
+        const graphSchemaStore = useGraphSchemaStore();
+        const excludedNodeTypes = graphSchemaStore.getExcludedNodeTypes.map(nt => ({"node_type": nt}));
+        this.setIsLoading(true);
         const startNode = {
                 id: crypto.randomUUID().toString(), // random string uuid
                 data: { label: this.message },
@@ -82,17 +94,16 @@ export const useChatStore = defineStore('chatStore', {
 
         this.topicMessages.push(topicMessage);
         const inTopicData = {
-            "prompt": this.message
+            "prompt": this.message,
+            "excluded_node_types": excludedNodeTypes
         }
+        console.log(inTopicData);
         if (this.sessionId) {
             inTopicData["session_id"] = this.sessionId;
         }
         axios.post(TOPIC_EP, inTopicData).then((response) => {
-            console.log("Topic response:", response.data);
-            console.log(response.data["keyword_results"]);
             const kgData = response.data["keyword_results"];
             for (const kw in kgData) {
-                
                 const kw_nodes  = kgData[kw].map((n)=>{
                     const color = COLORS[n["label"]] || '#CCCCCC';
                     console.log("Node color:", color);
@@ -167,12 +178,19 @@ export const useChatStore = defineStore('chatStore', {
     },
     async fetchNodeNeighbors(nodeId) {
         this.setIsLoading(true);
+        const graphSchemaStore = useGraphSchemaStore();
+        //TODO FIX 
+        const excludedNodeTypes = graphSchemaStore.getExcludedNodeTypes.map(nt => ({"node_type": nt}));
+        const excludedEdgeTypes = graphSchemaStore.getExcludedEdgeTypes.map(et => ({"source_node_type": et['start_node_type'], "target_node_type": et['target_node_type'], "edge_type": et['edge_type']}));
         const inNeighborData = {
             "node_id": nodeId,
             "max_neighbors": 5,
             "skip": 0,
-            "topic_prompt": this.topicMessages[this.topicMessages.length - 1] || ""
+            "topic_prompt": this.topicMessages[this.topicMessages.length - 1] || "",
+            "excluded_node_types": excludedNodeTypes,
+            "excluded_edge_types": excludedEdgeTypes
         }
+        console.log(inNeighborData)
         this.selectNode(nodeId);
         const neighbor_nodes = await axios.post(NEIGHBORS_EP, inNeighborData);
         for (const n of neighbor_nodes.data["neighbors"]) {

@@ -2,7 +2,7 @@
     <div class="h-full flex w-full justify-center items-center overflow-y-hidden" ref="containerRef">
         <div class="h-full flex flex-col bg-black/60 text-white" :style="{ width: `${leftWidth}%` }">
             <div class="flex-1 messages-container">
-
+                <Configuration class="absolute z-10"/>
                 <div class="flex flex-col gap-2"v-if="!isTopicState">
                     <div class="instruction-container" v-for="(msg, index) in instructionMessages" :key="index" :class="msg.type === 'response' ? 'self-start lg:max-full' : 'self-end lg:max-w-1/2'">
                         <div class="message-header"><Delete :handleDelete="()=> handleDeleteInstruction(msg, index)" v-if="msg.type !== 'response'"/>{{ msg.type.toUpperCase() }}:</div>
@@ -55,6 +55,7 @@ import ChatTypeSelection from './ChatTypeSelection.vue';
 import Delete from '../icons/Delete.vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import Configuration from './Configuration.vue';
 
 const chatStore = useChatStore();
 chatStore.createWebsocket();

@@ -24,7 +24,7 @@ async def get_topic_nodes(in_topic: InTopic):
     keyword_results = dict()
     for embedding, keyword in zip(embeddings, keywords):
         print(f"Keyword: {keyword}")
-        results = retriever.retrieve_similar_nodes(embedding, top_k=3)
+        results = retriever.retrieve_similar_nodes(embedding, top_k=3, excluded_node_types=in_topic.excluded_node_types)
         keyword_results[keyword] = results
         print("Top similar nodes:")
         for result in results:

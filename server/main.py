@@ -3,6 +3,8 @@ from server.router.HealthRouter import router as HealthRouter
 from server.router.WebsocketRouter import router as WebsocketRouter
 from server.router.NeighborsRouter import router as NeighborsRouter
 from server.router.TopicRouter import router as TopicRouter
+from server.router.GraphSchemaRouter import router as GraphSchemaRouter
+
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(trailing_slash=False)
 
@@ -18,7 +20,7 @@ app.include_router(HealthRouter)
 app.include_router(WebsocketRouter)
 app.include_router(NeighborsRouter)
 app.include_router(TopicRouter)
-
+app.include_router(GraphSchemaRouter)
     
 
 
