@@ -4,6 +4,7 @@ import { WEBSOCKET_URL, NEIGHBORS_EP } from '../constants/Server'
 import { TOPIC_EP } from '../constants/Server'
 import { COLORS, TEXT_COLORS } from '../constants/Graph'
 import { useGraphSchemaStore } from './GraphSchemaStore.js'
+import { createWebsocket } from '../utils/WebsocketHandling.js'
 
 export const useChatStore = defineStore('chatStore', {
   state: () => ({   message: "Sepsis & Diabetes",
@@ -12,7 +13,6 @@ export const useChatStore = defineStore('chatStore', {
                     messages: [],
                     nodes: [],
                     edges: [],
-                    sessionId: undefined,
                     topicMessages: [],
                     instructionMessages: [],
                     isTopicState: true,
@@ -60,33 +60,24 @@ export const useChatStore = defineStore('chatStore', {
     setMessage(newMessage) {
         this.message = newMessage
     },
+    setWebsocket(ws) {
+        this.websocket = ws;
+    },
+    addChangeToCounter() {
+        this.changeCounter += 1;
+    },
+    appendInstructionMessage(message) {
+        this.instructionMessages.push(message);
+    },
     createWebsocket(){
-        this.websocket = new WebSocket(WEBSOCKET_URL);
-        this.websocket.onopen = () => {
-            console.log("WebSocket connection established");
-        };
-        this.websocket.onmessage = (event) => {
-            const token = event.data;
-            if (token.startsWith("[START]")) {
-                this.instructionMessages.push({
-                    "id": crypto.randomUUID().toString(),
-                    "role": "assistant",
-                    "content": "",
-                    "type": "response"
-                });
-            }
-            else{
-                this.instructionMessages[this.instructionMessages.length - 1].content += token;
-            }
-            this.changeCounter += 1;
-        };
+        createWebsocket();
     },
     sendTopicMessage(topicMessage) {
         const graphSchemaStore = useGraphSchemaStore();
         const excludedNodeTypes = graphSchemaStore.getExcludedNodeTypes.map(nt => ({"node_type": nt}));
         this.setIsLoading(true);
         const startNode = {
-                id: crypto.randomUUID().toString(), // random string uuid
+                id: crypto.randomUUID().toString(),
                 data: { label: this.message },
                 position: { x: 250, y: 250 }
         }
@@ -97,16 +88,11 @@ export const useChatStore = defineStore('chatStore', {
             "prompt": this.message,
             "excluded_node_types": excludedNodeTypes
         }
-        console.log(inTopicData);
-        if (this.sessionId) {
-            inTopicData["session_id"] = this.sessionId;
-        }
         axios.post(TOPIC_EP, inTopicData).then((response) => {
             const kgData = response.data["keyword_results"];
             for (const kw in kgData) {
                 const kw_nodes  = kgData[kw].map((n)=>{
                     const color = COLORS[n["label"]] || '#CCCCCC';
-                    console.log("Node color:", color);
                     return {
                     id: n["id"],
                     data: { label: n["name"]},
@@ -128,7 +114,6 @@ export const useChatStore = defineStore('chatStore', {
         }).finally(() => {
             this.setIsLoading(false);
         });
-        console.log(this.topicMessages)
     },
     sendInstructionMessage(instructionMessage) {
         this.instructionMessages.push({
@@ -137,18 +122,15 @@ export const useChatStore = defineStore('chatStore', {
             "content": this.message,
             "type": "instruction"
         });
-        console.log(JSON.stringify({
-            "prompt": this.message,
-            "node_ids": this.selectedNodes
-        }));
         this.websocket.send(JSON.stringify({
             "prompt": this.message,
             "node_ids": this.selectedNodes
         }));
     },
     sendMessage() {
-        this.setIsLoading(true);
+        
         if(this.isTopicState){
+            this.setIsLoading(true);
             this.sendTopicMessage(this.message);
         } else {
             this.sendInstructionMessage(this.message);
@@ -226,9 +208,7 @@ export const useChatStore = defineStore('chatStore', {
     },
     deleteContextInstruction(msg, index) {
         this.instructionMessages.splice(index, 1);
-        console.log(msg)
         const node = this.nodes.find(n => n.id === msg.nodeId);
-        console.log(node)
         if (node) {
             node["style"] = { ...node["style"], borderColor: '#000000', borderWidth: 1 };
         }
