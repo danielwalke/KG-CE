@@ -179,7 +179,6 @@ export const useChatStore = defineStore('chatStore', {
     async fetchNodeNeighbors(nodeId) {
         this.setIsLoading(true);
         const graphSchemaStore = useGraphSchemaStore();
-        //TODO FIX 
         const excludedNodeTypes = graphSchemaStore.getExcludedNodeTypes.map(nt => ({"node_type": nt}));
         const excludedEdgeTypes = graphSchemaStore.getExcludedEdgeTypes.map(et => ({"source_node_type": et['start_node_type'], "target_node_type": et['target_node_type'], "edge_type": et['edge_type']}));
         const inNeighborData = {
