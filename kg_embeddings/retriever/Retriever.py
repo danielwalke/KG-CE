@@ -1,6 +1,7 @@
 from kg_embeddings.connector.Neo4jConnector import Neo4jConnector
 import ollama
 import numpy as np
+from kg_embeddings.retriever.ExcludedGraphInformation import ExcludedEdgeType, ExcludedNodeType
 
 
 def cosine_similarity(a, b):
@@ -34,7 +35,7 @@ class Retriever:
         embeddings = ollama_response['embeddings']
         return embeddings
     
-    def retrieve_similar_nodes(self, query_embedding, top_k=5):
+    def retrieve_similar_nodes(self, query_embedding, top_k=5, excluded_node_types: list[ExcludedNodeType]=[]):
         # Placeholder for retrieval logic
         query = """
         CALL db.index.vector.queryNodes(
@@ -42,12 +43,14 @@ class Retriever:
             $top_k, 
             $query_embedding
         ) 
-        YIELD node, score 
-        RETURN node.names as names, head(labels(node)) as label, elementId(node) as id, score
+        YIELD node, score
+        WHERE size([l IN labels(node) WHERE l IN $excluded_labels]) = 0
+        RETURN reduce(s = "", x IN node.names | s + (CASE WHEN s = "" THEN "" ELSE ", " END) + x) as name, head(labels(node)) as label, elementId(node) as id, score
         """
         parameters = {
             "query_embedding": query_embedding,
-            "top_k": top_k
+            "top_k": top_k,
+            "excluded_labels": [ent.node_type for ent in excluded_node_types]
         }
         results = self.neo4j_connector.run_query(query, parameters)
         return results
@@ -66,28 +69,46 @@ class Retriever:
         results = self.neo4j_connector.run_query(query, parameters)
         return results
     
-    def retrieve_all_neighboring_nodes(self, node_id, limit=10, skip =0, topic_prompt=None):
+    def retrieve_all_neighboring_nodes(self, node_id, limit=10, skip =0, topic_prompt=None, excluded_edge_types: list[ExcludedEdgeType]=[], excluded_node_types: list[ExcludedNodeType]=[]):
         ## TODO MAYBE it make sense to use shortest path between all existing entities additionally besies cosine sim, TODO SKIP BASED ON NUMBER OF EXISTING FETCHED NEIGHBORS
         print(topic_prompt)
         if topic_prompt:
             prompt_embedding = self.embed_query(topic_prompt)
-            query = """
-            MATCH (n)
-            WHERE elementId(n) = $node_id
-            MATCH (n)-[r]->(m)
-            RETURN
-                elementId(m) AS id,
-                m.names AS names,
-                type(r) AS relationship,
-                head(labels(m)) AS label,
-                m.embedding AS embedding
+            node_exclusion_list = [f"'{ent.node_type}' IN labels(m)" for ent in excluded_node_types]
+            edge_exclusion_list = [f"(type(r) = '{ent.edge_type}' AND '{ent.source_node_type}' IN labels(n) AND '{ent.target_node_type}' IN labels(m))" for ent in excluded_edge_types]
+
+            node_exclusion_clause = f"AND NOT ({' OR '.join(node_exclusion_list)})" if node_exclusion_list else ""
+            edge_exclusion_clause = f"AND NOT ({' OR '.join(edge_exclusion_list)})" if edge_exclusion_list else ""
+
+            query = f"""
+                MATCH (n)-[r]->(m)
+                WHERE elementId(n) = $node_id 
+                AND n.embedding IS NOT NULL
+                {node_exclusion_clause} 
+                {edge_exclusion_clause}
+                RETURN
+                    elementId(m) AS id,
+                    reduce(s = "", x IN coalesce(m.names, []) | s + (CASE WHEN s = "" THEN "" ELSE ", " END) + x) as name,
+                    type(r) AS relationship,
+                    head(labels(m)) AS label,
+                    m.embedding AS embedding
             """
         else:
-            query = """
-            MATCH (n)-[r]->(m)
-            WHERE elementId(n) = $node_id
-            RETURN elementId(m) as id, m.names as names, type(r) as relationship, head(labels(m)) as label
-            LIMIT $limit
+            node_exclusion_list = [f"'{ent.node_type}' IN labels(m)" for ent in excluded_node_types]
+            edge_exclusion_list = [f"(type(r) = '{ent.edge_type}' AND '{ent.source_node_type}' IN labels(n) AND '{ent.target_node_type}' IN labels(m))" for ent in excluded_edge_types]
+
+            node_exclusion_clause = f"AND NOT ({' OR '.join(node_exclusion_list)})" if node_exclusion_list else ""
+            edge_exclusion_clause = f"AND NOT ({' OR '.join(edge_exclusion_list)})" if edge_exclusion_list else ""
+
+            query = f"""
+                MATCH (n)-[r]->(m)
+                WHERE elementId(n) = $node_id {node_exclusion_clause} {edge_exclusion_clause}
+                RETURN 
+                    elementId(m) as id,
+                    reduce(s = "", x IN coalesce(m.names, []) | s + (CASE WHEN s = "" THEN "" ELSE ", " END) + x) as name,
+                    type(r) as relationship, 
+                    head(labels(m)) as label
+                LIMIT $limit
             """
         parameters = {
             "node_id": node_id,
@@ -97,7 +118,9 @@ class Retriever:
         results = self.neo4j_connector.run_query(query, parameters)
         if topic_prompt:
             print("Ranking by similarity to topic prompt embedding")
+            print(list(map(lambda x: x['name'], results)))
             results = rank_by_similarity(results, prompt_embedding, top_k=limit)
+            print(list(map(lambda x: x['name'], results)))
         
         return results
     
