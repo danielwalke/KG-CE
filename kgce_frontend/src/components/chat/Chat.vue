@@ -7,16 +7,7 @@
                     <div class="instruction-container" v-for="(msg, index) in instructionMessages" :key="index" :class="msg.type === 'response' ? 'self-start lg:max-full' : 'self-end lg:max-w-1/2'">
                         <div class="message-header"><Delete :handleDelete="()=> handleDeleteInstruction(msg, index)" v-if="msg.type !== 'response'"/>{{ msg.type.toUpperCase() }}:</div>
                         <div class="message">
-                            <div 
-                            v-if="msg.type === 'response'" 
-                            
-                            >
-                            <div v-if="isThinking(msg)">Thinking...</div>
-                            <div v-else v-html="parseMarkdown(msg.content)"
-                            class="prose prose-sm dark:prose-invert max-w-none">
-                            </div>
-                            </div>
-
+                            <ResponseContent v-if="msg.type === 'response'" :msg="msg"/>
                             <div v-else>
                             {{ msg.content }}
                             </div>
@@ -60,6 +51,7 @@ import Delete from '../icons/Delete.vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import Configuration from './Configuration.vue';
+import ResponseContent from './ResponseContent.vue';
 
 const chatStore = useChatStore();
 chatStore.createWebsocket();
@@ -68,10 +60,8 @@ const isTopicState = computed(()=> chatStore.isTopicState);
 const topicMessages = computed(()=> chatStore.topicMessages);
 const instructionMessages = computed(()=> chatStore.instructionMessages);
 
-const parseMarkdown = (content) => {
-  const rawHtml = marked.parse(content.split('</think>').slice(-1)[0]);
-  return DOMPurify.sanitize(rawHtml);
-};
+
+
     
 const containerRef = ref(null);
 const leftWidth = ref(50);
@@ -136,11 +126,6 @@ const stopDrag = () => {
 onUnmounted(() => {
   stopDrag();
 });
-
-function isThinking(msg){
-    return msg.type === 'response' && msg.content.includes("<think>") && !msg.content.includes("</think>");
-}
-
 </script>
 
 <style scoped>
