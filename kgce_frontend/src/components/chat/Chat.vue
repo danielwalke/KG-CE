@@ -9,9 +9,13 @@
                         <div class="message">
                             <div 
                             v-if="msg.type === 'response'" 
-                            v-html="parseMarkdown(msg.content)"
-                            class="prose prose-sm dark:prose-invert max-w-none"
-                            ></div>
+                            
+                            >
+                            <div v-if="isThinking(msg)">Thinking...</div>
+                            <div v-else v-html="parseMarkdown(msg.content)"
+                            class="prose prose-sm dark:prose-invert max-w-none">
+                            </div>
+                            </div>
 
                             <div v-else>
                             {{ msg.content }}
@@ -65,7 +69,7 @@ const topicMessages = computed(()=> chatStore.topicMessages);
 const instructionMessages = computed(()=> chatStore.instructionMessages);
 
 const parseMarkdown = (content) => {
-  const rawHtml = marked.parse(content);
+  const rawHtml = marked.parse(content.split('</think>').slice(-1)[0]);
   return DOMPurify.sanitize(rawHtml);
 };
     
@@ -132,6 +136,10 @@ const stopDrag = () => {
 onUnmounted(() => {
   stopDrag();
 });
+
+function isThinking(msg){
+    return msg.type === 'response' && msg.content.includes("<think>") && !msg.content.includes("</think>");
+}
 
 </script>
 
