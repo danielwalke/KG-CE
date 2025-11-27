@@ -7,7 +7,7 @@ from server.constants.Endpoints import WEBSOCKET_EP
 from server.meta.InInstruction import InInstruction
 import asyncio
 from server.utils.SubgraphToMarkdown import format_graph_for_llm
-
+from textwrap import dedent
 router = APIRouter(redirect_slashes=False)
 
 @router.websocket(SERVER_PREFIX + WEBSOCKET_EP)
@@ -34,23 +34,31 @@ async def websocket_endpoint(websocket: WebSocket):
             print("Graph markdown prepared, constructing prompt.")
             print(graph_markdown)
 
-            prompt_template = """
-                You are an assistant answering questions based on a knowledge graph.
+            prompt_template = dedent("""
+                <system_instructions>
+                You are a Knowledge Graph Assistant.
+                1. **Primary Source:** Answer strictly based on the <context_data> below.
+                2. **Refusal:** If the answer is not in the context, say "I don't know."
+                3. **Tone:** Professional and concise.
+                </system_instructions>
 
-                <context>
+                <context_data>
                 {context_data}
-                </context>
+                </context_data>
 
-                Please answer the following user query based strictly on the context provided above.
-                <query>
-                {user_prompt}
-                </query>
-
-                Provide a detailed and accurate response. You can also use the following chat history for context:
+                <supplementary_info>
+                The following is strictly for reference (e.g., resolving pronouns). Do not use this as a primary source of facts.
                 <chat_history>
                 {previous_context}
                 </chat_history>
-            """
+                </supplementary_info>
+
+                <user_query>
+                {user_prompt}
+                </user_query>
+
+                Response:
+            """)
 
             formatted_prompt = prompt_template.format(
                 context_data=graph_markdown,
