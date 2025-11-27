@@ -40,8 +40,7 @@ export function sendTopicMessage(){
             chatStore.appendNodeList(kw_nodes);
             chatStore.appendEdgeList(kw_edges);
         }
-        chatStore.addChangeToCounter();
-        
+        chatStore.addChangeToCounter();        
     }).catch((error) => {
         console.error("Error sending topic message:", error);
     }).finally(() => {

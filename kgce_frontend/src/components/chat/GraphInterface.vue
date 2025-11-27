@@ -13,13 +13,11 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, watch, nextTick } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 
 // these components are only shown as examples of how to use a custom node or edge
 // you can find many examples of how to create these custom components in the examples page of the docs
-import SpecialNode from '../graphComponents/SpecialNode.vue'
-import SpecialEdge from '../graphComponents/SpecialEdge.vue'
 import { useChatStore } from '../../stores/ChatStore.js'
 import { useLayout } from '../../utils/useLayout.js'
 
