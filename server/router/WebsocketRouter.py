@@ -45,11 +45,17 @@ async def websocket_endpoint(websocket: WebSocket):
                 <query>
                 {user_prompt}
                 </query>
+
+                Provide a detailed and accurate response. You can also use the following chat history for context:
+                <chat_history>
+                {previous_context}
+                </chat_history>
             """
 
             formatted_prompt = prompt_template.format(
                 context_data=graph_markdown,
-                user_prompt=in_instruction.prompt
+                user_prompt=in_instruction.prompt,
+                previous_context=in_instruction.previous_context
             )
 
             stream_generator = llm_instance.run_query(formatted_prompt, session_id)

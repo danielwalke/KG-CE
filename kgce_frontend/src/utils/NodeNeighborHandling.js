@@ -12,7 +12,7 @@ export async function fetchNodeNeighbors(nodeId){
     const excludedEdgeTypes = graphSchemaStore.getExcludedEdgeTypes.map(et => ({"source_node_type": et['start_node_type'], "target_node_type": et['target_node_type'], "edge_type": et['edge_type']}));
     const inNeighborData = {
         "node_id": nodeId,
-        "max_neighbors": 5,
+        "max_neighbors": 50,
         "skip": 0,
         "topic_prompt": chatStore.topicMessages[chatStore.topicMessages.length - 1] || "",
         "excluded_node_types": excludedNodeTypes,

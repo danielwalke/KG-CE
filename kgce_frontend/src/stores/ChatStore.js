@@ -102,9 +102,11 @@ export const useChatStore = defineStore('chatStore', {
             "content": this.message,
             "type": "instruction"
         });
+        console.log(this.instructionMessages.map(msg => "<" + msg.role + ">" + msg.content + "</" + msg.role + ">").join("\n\n"))
         this.websocket.send(JSON.stringify({
             "prompt": this.message,
-            "node_ids": this.selectedNodes
+            "node_ids": this.selectedNodes,
+            "previous_context": this.instructionMessages.map(msg => "<" + msg.role + ">" + msg.content + "</" + msg.role + ">").join("\n\n")
         }));
     },
     sendMessage() {
