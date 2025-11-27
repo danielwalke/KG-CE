@@ -20,8 +20,7 @@ export function createWebsocket(){
         else{
             chatStore.instructionMessages[chatStore.instructionMessages.length - 1].content += token;
         }
-        chatStore.addChangeToCounter();
     };
+    chatStore.addChangeToCounter();
     chatStore.setWebsocket(websocket);
-    
 }

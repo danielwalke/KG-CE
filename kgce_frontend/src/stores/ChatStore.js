@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import { WEBSOCKET_URL, NEIGHBORS_EP } from '../constants/Server'
-import { TOPIC_EP } from '../constants/Server'
+import { NEIGHBORS_EP } from '../constants/Server'
 import { COLORS, TEXT_COLORS } from '../constants/Graph'
 import { useGraphSchemaStore } from './GraphSchemaStore.js'
+import { sendTopicMessage } from '../utils/TopicMessageHandling.js'
 import { createWebsocket } from '../utils/WebsocketHandling.js'
 
 export const useChatStore = defineStore('chatStore', {
@@ -72,48 +72,20 @@ export const useChatStore = defineStore('chatStore', {
     createWebsocket(){
         createWebsocket();
     },
-    sendTopicMessage(topicMessage) {
-        const graphSchemaStore = useGraphSchemaStore();
-        const excludedNodeTypes = graphSchemaStore.getExcludedNodeTypes.map(nt => ({"node_type": nt}));
-        this.setIsLoading(true);
-        const startNode = {
-                id: crypto.randomUUID().toString(),
-                data: { label: this.message },
-                position: { x: 250, y: 250 }
-        }
-        this.nodes.push(startNode);
-
+    appendNode(node) {
+        this.nodes.push(node);
+    },
+    appendEdge(edge) {
+        this.edges.push(edge);
+    },
+    appendNodeList(nodes) {
+        this.nodes.push(...nodes);
+    },
+    appendEdgeList(edges) {
+        this.edges.push(...edges);
+    },
+    appendTopicMessage(topicMessage) {
         this.topicMessages.push(topicMessage);
-        const inTopicData = {
-            "prompt": this.message,
-            "excluded_node_types": excludedNodeTypes
-        }
-        axios.post(TOPIC_EP, inTopicData).then((response) => {
-            const kgData = response.data["keyword_results"];
-            for (const kw in kgData) {
-                const kw_nodes  = kgData[kw].map((n)=>{
-                    const color = COLORS[n["label"]] || '#CCCCCC';
-                    return {
-                    id: n["id"],
-                    data: { label: n["name"]},
-                    position: { x: Math.random() * 400, y: Math.random() * 400 },
-                    style: { backgroundColor: color, color: TEXT_COLORS[n["label"]] || '#000000', borderColor: '#000000', borderWidth: 10},
-                }});
-                const kw_edges = kw_nodes.map((n)=>({
-                    id: `${startNode.id}-${n["id"]}`,
-                    source: startNode.id,
-                    target: n["id"]
-                }));
-                this.nodes.push(...kw_nodes);
-                this.edges.push(...kw_edges);
-            }
-            this.changeCounter += 1;
-            
-        }).catch((error) => {
-            console.error("Error sending topic message:", error);
-        }).finally(() => {
-            this.setIsLoading(false);
-        });
     },
     sendInstructionMessage(instructionMessage) {
         this.instructionMessages.push({
@@ -128,15 +100,13 @@ export const useChatStore = defineStore('chatStore', {
         }));
     },
     sendMessage() {
-        
         if(this.isTopicState){
-            this.setIsLoading(true);
-            this.sendTopicMessage(this.message);
+            sendTopicMessage();
+            this.isTopicState = false;
         } else {
             this.sendInstructionMessage(this.message);
         }
         this.message = "";
-        
     },
     selectNode(nodeId) {
         this.selectedNodes.push(nodeId);
