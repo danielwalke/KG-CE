@@ -19,8 +19,13 @@ export const useChatStore = defineStore('chatStore', {
                     selectedNodes: [],
                     isLoading: false,
                     isConfigurationOpen: false,
+                    selectedNode: undefined,
+                    currentPath: [],
    }),
   getters: {
+    getCurrentPath(state) {
+        return state.currentPath
+    },
     getMessage(state) {
       return state.message
     },
@@ -103,9 +108,16 @@ export const useChatStore = defineStore('chatStore', {
             "type": "instruction"
         });
         console.log(this.instructionMessages.map(msg => "<" + msg.role + ">" + msg.content + "</" + msg.role + ">").join("\n\n"))
+        console.log(this.edges)
+        console.log(this.selectedNodes)
+        const childrenOfSelectedNodes = this.edges
+            .filter(edge => this.selectedNodes.includes(edge["source"]))
+            .map(edge => edge["target"]);
+        const selectedNodesAndChildren = [...this.selectedNodes, ...childrenOfSelectedNodes];
+        console.log("Selected nodes and their children:", selectedNodesAndChildren);
         this.websocket.send(JSON.stringify({
             "prompt": this.message,
-            "node_ids": this.selectedNodes,
+            "node_ids": selectedNodesAndChildren,
             "previous_context": this.instructionMessages.map(msg => "<" + msg.role + ">" + msg.content + "</" + msg.role + ">").join("\n\n")
         }));
     },
@@ -120,6 +132,7 @@ export const useChatStore = defineStore('chatStore', {
     },
     selectNode(nodeId) {
         selectNode(nodeId);
+        this.selectedNode = nodeId;
     },
     async fetchNodeNeighbors(nodeId) {
         fetchNodeNeighbors(nodeId);

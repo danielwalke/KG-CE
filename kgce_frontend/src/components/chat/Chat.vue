@@ -35,7 +35,8 @@
         >
         </div>
         <div class="flex-1 h-full bg-black/20">
-            <GraphInterface class="h-full w-full"/>
+            <!-- <GraphInterface class="h-full w-full"/> -->
+            <TreeInterface class="h-full w-full"/>
         </div>
         
     </div>
@@ -52,6 +53,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import Configuration from './Configuration.vue';
 import ResponseContent from './ResponseContent.vue';
+import TreeInterface from '../treeInterface/TreeInterface.vue';
 
 const chatStore = useChatStore();
 chatStore.createWebsocket();

@@ -3,16 +3,19 @@ import { TOPIC_EP } from '../constants/Server'
 import { COLORS, TEXT_COLORS } from '../constants/Graph'
 import { useChatStore } from '../stores/ChatStore.js'
 import { useGraphSchemaStore } from '../stores/GraphSchemaStore.js'
+import { useTreeStore } from '../stores/TreeStore.js'
 
 export function sendTopicMessage(){
     const chatStore = useChatStore();
+    const treeStore = useTreeStore();
     const graphSchemaStore = useGraphSchemaStore();
     const excludedNodeTypes = graphSchemaStore.getExcludedNodeTypes.map(nt => ({"node_type": nt}));
     chatStore.setIsLoading(true);
     const startNode = {
             id: crypto.randomUUID().toString(),
             data: { label: chatStore.message },
-            position: { x: 250, y: 250 }
+            position: { x: 250, y: 250 },
+            group: "start",
     }
     chatStore.appendNode(startNode);
     chatStore.appendTopicMessage(chatStore.message);
@@ -24,6 +27,17 @@ export function sendTopicMessage(){
         console.log("Topic message response:", response.data);
         const kgData = response.data["keyword_results"];
         for (const kw in kgData) {
+            for(const node of kgData[kw]){
+                const processedNode = {
+                    "id": node["id"],
+                    "label": node["label"],
+                    "name": node["name"],
+                    "type": "topic",
+                    "parent": undefined,
+                }
+                treeStore.addTopicToQuery(processedNode, startNode["data"]["label"]);
+                treeStore.addNode(processedNode);
+            }
             const kw_nodes  = kgData[kw].map((n)=>{
                 const color = COLORS[n["label"]] || '#CCCCCC';
                 return {
@@ -31,6 +45,7 @@ export function sendTopicMessage(){
                 data: { label: n["name"]},
                 position: { x: Math.random() * 400, y: Math.random() * 400 },
                 style: { backgroundColor: color, color: TEXT_COLORS[n["label"]] || '#000000', borderColor: '#000000', borderWidth: 10},
+                group: "topic",
             }});
             const kw_edges = kw_nodes.map((n)=>({
                 id: `${startNode.id}-${n["id"]}`,
