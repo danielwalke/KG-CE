@@ -1,25 +1,26 @@
 <template>
-    <div class="h-full flex flex-col gap-4 p-4 overflow-hidden bg-gray-900 text-gray-100">
+    <div class="h-full flex flex-col gap-4 p-4 overflow-hidden text-white">
 
-        <div class="flex-none space-y-4 border-b border-gray-700 pb-4">
+        <div class="flex-none space-y-4 border-b border-white/10 pb-4">
+            
             <div v-if="savedPaths.length > 0">
-                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Saved Paths</h3>
+                <h3 class="section-header text-base">SAVED PATHS:</h3>
                 <div class="flex flex-wrap gap-2">
-                    <div v-for="(path, index) in savedPaths" :key="index" class="text-xs bg-gray-800 p-1 px-2 rounded">
-                        Path #{{ index + 1 }} ({{ path.length }} nodes)
+                    <div v-for="(path, index) in savedPaths" :key="index" class="path-tag">
+                        Path #{{ index + 1 }} ({{ path.length }})
                     </div>
                 </div>
             </div>
 
             <div>
-                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Current Path</h3>
-                <div class="flex flex-wrap items-center gap-2 bg-gray-800/50 p-3 rounded-lg min-h-[3rem]">
-                    <span v-if="currentPath.length === 0" class="text-gray-500 italic text-sm">No path started...</span>
+                <h3 class="section-header text-base">CURRENT PATH:</h3>
+                <div class="flex flex-wrap items-center gap-2 bg-black/40 border border-white/10 p-3 rounded-md min-h-[3rem]">
+                    <span v-if="currentPath.length === 0" class="text-white/50 italic text-sm">No path started...</span>
                     
                     <template v-for="(node, index) in currentPath" :key="node.id">
-                        <span v-if="index > 0" class="text-gray-500">/</span>
+                        <span v-if="index > 0" class="text-white/40">/</span>
                         <button 
-                            class="path-node" 
+                            class="path-node-btn" 
                             @click="handlePathClick(node)"
                             title="Reset path to this node"
                         >
@@ -31,9 +32,10 @@
         </div>
 
         <div class="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar">
+            
             <section>
-                <h3 class="section-header">Start Queries</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <h3 class="section-header">START QUERIES:</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <button 
                         v-for="query in queries" 
                         :key="query" 
@@ -47,8 +49,8 @@
             </section>
 
             <section v-if="selectedQuery">
-                <h3 class="section-header">Topics for "{{ selectedQuery }}"</h3>
-                <div v-if="topics.length" class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                <h3 class="section-header">TOPICS:</h3>
+                <div v-if="topics.length" class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2">
                     <button 
                         v-for="topic in topics" 
                         :key="topic.id" 
@@ -58,12 +60,12 @@
                         {{ topic.name }}
                     </button>
                 </div>
-                <div v-else class="text-gray-500 italic text-sm">No topics found.</div>
+                <div v-else class="text-white/50 italic pl-2">No topics found.</div>
             </section>
 
             <section v-if="childrenNodes.length">
-                <h3 class="section-header">Next Nodes</h3>
-                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                <h3 class="section-header">NEXT NODES:</h3>
+                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                     <button 
                         v-for="node in childrenNodes" 
                         :key="node.id" 
@@ -83,12 +85,11 @@ import { computed, ref } from 'vue';
 import { useTreeStore } from '../../stores/TreeStore';
 
 const treeStore = useTreeStore();
-
 const selectedQuery = ref(undefined);
 
 const queries = computed(() => treeStore.getQueries);
 const currentPath = computed(() => treeStore.getCurrentPath);
-const savedPaths = computed(() => treeStore.storedPaths || []); 
+const savedPaths = computed(() => treeStore.storedPaths || []);
 const childrenNodes = computed(() => treeStore.getChildren);
 
 const topics = computed(() => {
@@ -117,14 +118,12 @@ function resetPathAndSelect(node) {
         treeStore.selectNode(node);
         return;
     }
-
     treeStore.storedPaths.push([...treeStore.currentPath]);
 
     const nodesInPath = [];
     if (node.parent !== undefined) {
         reconstructPath(node.parent, nodesInPath);
     }
-    
     treeStore.currentPath = nodesInPath;
     treeStore.selectNode(node);
 }
@@ -132,7 +131,6 @@ function resetPathAndSelect(node) {
 function reconstructPath(nodeId, pathArray) {
     const node = treeStore.nodeIdToNode[nodeId];
     if (!node) return;
-    
     pathArray.unshift(node);
     if (node.parent !== undefined) {
         reconstructPath(node.parent, pathArray);
@@ -143,22 +141,38 @@ function reconstructPath(nodeId, pathArray) {
 <style scoped>
 @reference "../../style.css";
 
+/* Matches the .message-header style from your chat:
+   Bold, Italic, specific margin
+*/
 .section-header {
-    @apply text-xs font-bold text-gray-500 uppercase mb-2 ml-1;
+    @apply font-bold italic flex items-center gap-2 justify-start mb-2 text-white;
 }
 
+/* Matches .instruction-container / .topic-container style:
+   bg-black/80, rounded-md, text-white
+*/
 .tab-block {
-    @apply bg-gray-800 text-gray-200 p-3 rounded-lg text-sm text-left transition-all duration-200 border border-gray-700 hover:bg-gray-700 hover:border-blue-500 hover:text-white;
+    @apply bg-black/80 text-white p-3 rounded-md text-sm text-justify font-semibold border border-transparent transition-all duration-150;
+    /* Hover effect */
+    @apply hover:bg-black/60 hover:border-white/20 cursor-pointer;
 }
 
+/* Active state for Queries */
 .tab-block.active {
-    @apply bg-blue-900/40 border-blue-500 text-white ring-1 ring-blue-500;
+    @apply border-white bg-black/90;
 }
 
-.path-node {
-    @apply px-2 py-1 rounded hover:bg-white/10 text-blue-400 font-medium transition-colors text-sm;
+/* Small tags for saved paths */
+.path-tag {
+    @apply text-xs bg-black/60 border border-white/10 p-1 px-2 rounded-md text-white/80;
 }
 
+/* Breadcrumb items */
+.path-node-btn {
+    @apply px-2 py-1 rounded-md hover:bg-white/20 text-white font-semibold transition-colors text-sm;
+}
+
+/* Scrollbar customization to match dark theme */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
 }
@@ -166,6 +180,6 @@ function reconstructPath(nodeId, pathArray) {
     background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-gray-700 rounded-full;
+    @apply bg-white/20 rounded-full hover:bg-white/40;
 }
 </style>
