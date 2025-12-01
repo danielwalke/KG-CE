@@ -44,16 +44,6 @@ export const useTreeStore = defineStore("TreeStore", {
         }
         return state.currentPath[0].id;
     },
-    getNodes(state){
-        const nodes = new Set();
-        for(const path of state.storedPaths){
-            if(path[0] !== state.graphViewTopic) continue;
-            for(const node of path){
-                nodes.add(node.id);
-            }
-        }
-        return Array.from(nodes);
-    },
     getCurrentPath(state) {
         return state.currentPath;
     },

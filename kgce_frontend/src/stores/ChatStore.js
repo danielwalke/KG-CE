@@ -4,6 +4,7 @@ import { createWebsocket } from '../utils/WebsocketHandling.js'
 import { fetchNodeNeighbors } from '../utils/NodeNeighborHandling.js'
 import { selectNode } from '../utils/NodeSelectionHandling.js'
 import { deleteContextInstruction } from '../utils/DeleteContextHandling.js'
+import { useGraphStore } from './GraphStore.js'
 
 export const useChatStore = defineStore('chatStore', {
   state: () => ({   message: "Sepsis & Diabetes",
@@ -58,6 +59,10 @@ export const useChatStore = defineStore('chatStore', {
   actions: {
     setIsTreeView(isTreeView) {
         this.isTreeView = isTreeView;
+        if(!isTreeView) {
+            const graphStore = useGraphStore();
+            graphStore.initializeGraph();
+        }
     },
     setIsConfigurationOpen(isOpen) {
         this.isConfigurationOpen = isOpen;

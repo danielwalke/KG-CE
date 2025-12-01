@@ -16,23 +16,24 @@
 import { computed, watch, nextTick } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 
-// these components are only shown as examples of how to use a custom node or edge
-// you can find many examples of how to create these custom components in the examples page of the docs
 import { useChatStore } from '../../../stores/ChatStore.js'
 import { useLayout } from '../../../utils/useLayout.js'
+import { useGraphStore } from '../../../stores/GraphStore.js'
 
 const chatStore = useChatStore()
+const graphStore = useGraphStore()
 
 const nodes = computed({
   get() {
-    return chatStore.nodes
+    console.log(graphStore.getNodes)
+    return graphStore.getNodes
   },
   set(value) {
-    chatStore.nodes = value
+    graphStore.nodes = value
   }
 })
 // these are our edges
-const edges = computed(() => chatStore.edges)
+const edges = computed(() => graphStore.getEdges)
 const changeCounter = computed(() => chatStore.changeCounter)
 
 const { 
