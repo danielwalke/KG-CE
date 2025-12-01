@@ -35,8 +35,8 @@
         >
         </div>
         <div class="flex-1 h-full bg-black/20">
-            <!-- <GraphInterface class="h-full w-full"/> -->
-            <TreeInterface class="h-full w-full"/>
+            <Interface/>
+            
         </div>
         
     </div>
@@ -46,14 +46,15 @@
 import Send from './Send.vue'
 import { useChatStore } from '../../stores/ChatStore'
 import { computed, ref, onUnmounted } from 'vue'
-import GraphInterface from './GraphInterface.vue';
+import GraphInterface from '../interfaceViews/graphInterface/GraphInterface.vue';
+import Interface from '../interfaceViews/Interface.vue';
 import ChatTypeSelection from './ChatTypeSelection.vue';
 import Delete from '../icons/Delete.vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import Configuration from './Configuration.vue';
 import ResponseContent from './ResponseContent.vue';
-import TreeInterface from '../treeInterface/TreeInterface.vue';
+import TreeInterface from '../interfaceViews/treeInterface/TreeInterface.vue';
 
 const chatStore = useChatStore();
 chatStore.createWebsocket();

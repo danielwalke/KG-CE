@@ -21,6 +21,7 @@ export const useChatStore = defineStore('chatStore', {
                     isConfigurationOpen: false,
                     selectedNode: undefined,
                     currentPath: [],
+                    isTreeView: true
    }),
   getters: {
     getCurrentPath(state) {
@@ -55,6 +56,9 @@ export const useChatStore = defineStore('chatStore', {
     }
   },
   actions: {
+    setIsTreeView(isTreeView) {
+        this.isTreeView = isTreeView;
+    },
     setIsConfigurationOpen(isOpen) {
         this.isConfigurationOpen = isOpen;
     },

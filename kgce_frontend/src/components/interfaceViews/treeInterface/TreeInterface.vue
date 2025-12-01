@@ -82,7 +82,7 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { useTreeStore } from '../../stores/TreeStore';
+import { useTreeStore } from '../../../stores/TreeStore';
 
 const treeStore = useTreeStore();
 const selectedQuery = ref(undefined);
@@ -139,7 +139,7 @@ function reconstructPath(nodeId, pathArray) {
 </script>
 
 <style scoped>
-@reference "../../style.css";
+@reference "../../../style.css";
 
 /* Matches the .message-header style from your chat:
    Bold, Italic, specific margin

@@ -18,8 +18,8 @@ import { VueFlow, useVueFlow } from '@vue-flow/core'
 
 // these components are only shown as examples of how to use a custom node or edge
 // you can find many examples of how to create these custom components in the examples page of the docs
-import { useChatStore } from '../../stores/ChatStore.js'
-import { useLayout } from '../../utils/useLayout.js'
+import { useChatStore } from '../../../stores/ChatStore.js'
+import { useLayout } from '../../../utils/useLayout.js'
 
 const chatStore = useChatStore()
 
