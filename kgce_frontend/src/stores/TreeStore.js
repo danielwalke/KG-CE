@@ -78,6 +78,8 @@ export const useTreeStore = defineStore("TreeStore", {
     deletePath(path){
         const pathId = getPathId(path);
         this.storedPaths = this.storedPaths.filter(p => getPathId(p) !== pathId);
+        const graphStore = useGraphStore();
+        graphStore.initializeGraph();
     },
     async selectNode(node){
         this.selectedNodeId = node.id;

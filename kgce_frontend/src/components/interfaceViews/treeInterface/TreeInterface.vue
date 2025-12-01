@@ -3,11 +3,12 @@
 
         <div class="flex-none space-y-4 border-b border-white/10 pb-4">
 
-            <div v-if="savedPaths.length > 0">
+            <div v-if="savedPaths.length > 0" class="max-h-48 overflow-y-auto">
                 <h3 class="section-header text-base">SAVED PATHS:</h3>
-                <div class="flex flex-wrap gap-2">
-                    <div v-for="(path, index) in savedPaths" :key="index" class="path-tag">
-                        Path #{{ index + 1 }} ({{ path.length }})
+                <div class="flex flex-col gap-2">
+                    <div v-for="(path, index) in savedPaths" :key="index" class="path-tag  max-w-max overflow-x-auto">
+                        <div class="p-1 rounded-md" v-for="node in path" :key="node.id + '-' + index" :style="node.style">{{ node.name }}</div>
+                        <Delete :handleDelete="() => deletePath(path)"/>
                     </div>
                 </div>
             </div>
@@ -66,7 +67,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useTreeStore } from '../../../stores/TreeStore';
-
+import Delete from '../../icons/Delete.vue';
 const treeStore = useTreeStore();
 const selectedQuery = ref(undefined);
 
@@ -119,6 +120,10 @@ function reconstructPath(nodeId, pathArray) {
         reconstructPath(node.parent, pathArray);
     }
 }
+
+function deletePath(path){
+    treeStore.deletePath(path);
+}
 </script>
 
 <style scoped>
@@ -147,7 +152,7 @@ function reconstructPath(nodeId, pathArray) {
 
 /* Small tags for saved paths */
 .path-tag {
-    @apply text-xs bg-black/60 border border-white/10 p-1 px-2 rounded-md text-white/80;
+    @apply text-xs bg-black/60 border border-white/10 p-1 px-2 rounded-md text-white/80 flex items-center gap-2;
 }
 
 /* Breadcrumb items */
