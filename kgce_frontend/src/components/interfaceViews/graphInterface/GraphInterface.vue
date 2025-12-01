@@ -34,7 +34,8 @@ const nodes = computed({
 })
 // these are our edges
 const edges = computed(() => graphStore.getEdges)
-const changeCounter = computed(() => chatStore.changeCounter)
+
+layoutGraph("TB")
 
 const { 
   onNodeDragStart, 
@@ -65,10 +66,7 @@ async function layoutGraph(direction = "TB") {
   })
 }
 
-watch((changeCounter), () => {
-  console.error("Something changed, laying out graph")
-  layoutGraph("TB")
-})
+
 
 
 

@@ -25,6 +25,9 @@ export const useChatStore = defineStore('chatStore', {
                     isTreeView: true
    }),
   getters: {
+    getIsTreeView(state) {
+        return state.isTreeView
+    },
     getCurrentPath(state) {
         return state.currentPath
     },
@@ -62,6 +65,8 @@ export const useChatStore = defineStore('chatStore', {
         if(!isTreeView) {
             const graphStore = useGraphStore();
             graphStore.initializeGraph();
+            this.addChangeToCounter();
+            console.log(this.changeCounter)
         }
     },
     setIsConfigurationOpen(isOpen) {
