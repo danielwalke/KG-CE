@@ -54,6 +54,9 @@ export const useGraphStore = defineStore("GraphStore", {
             }
         },
         initializeGraph(){
+            console.log("Initializing graph...");
+            this.nodes = [];
+            this.edges = [];
             this.initializeNodes();
             this.initializeEdges();
         },
