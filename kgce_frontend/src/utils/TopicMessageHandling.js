@@ -16,6 +16,7 @@ export function sendTopicMessage(){
             data: { label: chatStore.message },
             position: { x: 250, y: 250 },
             group: "start",
+            style: {"background-color": "#000000", "color": "#FFFFFF"}
     }
     chatStore.appendTopicMessage(chatStore.message);
     const inTopicData = {
@@ -26,12 +27,15 @@ export function sendTopicMessage(){
         const kgData = response.data["keyword_results"];
         for (const kw in kgData) {
             for(const node of kgData[kw]){
+                const bgColor = COLORS[node['label']] || "#888888"
+                const textColor = TEXT_COLORS[node['label']] || "#FFFFFF"
                 const processedNode = {
                     "id": node["id"],
                     "label": node["label"],
                     "name": node["name"],
                     "type": "topic",
                     "parent": undefined,
+                    "style": {"background-color": bgColor, "color": textColor}
                 }
                 treeStore.addTopicToQuery(processedNode, startNode["data"]["label"]);
                 treeStore.addNode(processedNode);

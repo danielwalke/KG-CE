@@ -4,6 +4,7 @@ import { useChatStore } from '../stores/ChatStore.js'
 import { useGraphSchemaStore } from '../stores/GraphSchemaStore.js'
 import { useTreeStore } from '../stores/TreeStore.js'
 import { selectNode } from './NodeSelectionHandling.js'
+import { COLORS, TEXT_COLORS } from '../constants/Graph.js'
 
 export async function fetchNodeNeighbors(nodeId){
     const treeStore = useTreeStore();
@@ -18,12 +19,15 @@ export async function fetchNodeNeighbors(nodeId){
         "skip": 0,
         "topic_prompt": chatStore.topicMessages[chatStore.topicMessages.length - 1] || "",
         "excluded_node_types": excludedNodeTypes,
-        "excluded_edge_types": excludedEdgeTypes
+        "excluded_edge_types": excludedEdgeTypes,
+        "style": {"background-color": "#000000", "color": "#FFFFFF"}
     }
     selectNode(nodeId);
     const neighbor_nodes = await axios.post(NEIGHBORS_EP, inNeighborData);
     const processedNodeNeighbors = []
     for (const n of neighbor_nodes.data["neighbors"]) {
+        const bgColor = COLORS[n['label']] || "#888888"
+        const textColor = TEXT_COLORS[n['label']] || "#FFFFFF"
         const node = {
             "id": n["id"],
             "label": n["label"],
@@ -31,6 +35,7 @@ export async function fetchNodeNeighbors(nodeId){
             "relationshipType": `${nodeId}-${n["id"]}`,
             "type": "neighbor",
             "parent": nodeId,
+            "style": {"background-color": bgColor, "color": textColor}
         }
         treeStore.addNode(node);
         processedNodeNeighbors.push(node);

@@ -20,7 +20,7 @@
 
                     <template v-for="(node, index) in currentPath" :key="node.id">
                         <span v-if="index > 0" class="text-white/40">/</span>
-                        <button class="path-node-btn" @click="handlePathClick(node)" title="Reset path to this node">
+                        <button class="path-node-btn" @click="handlePathClick(node)" title="Reset path to this node" :style="node.style">
                             {{ node.name }}
                         </button>
                     </template>
@@ -43,7 +43,7 @@
             <section v-if="selectedQuery">
                 <h3 class="section-header">TOPICS:</h3>
                 <div v-if="topics.length" class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2">
-                    <button v-for="topic in topics" :key="topic.id" @click="selectTopic(topic)" class="tab-block">
+                    <button v-for="topic in topics" :key="topic.id" @click="selectTopic(topic)" class="tab-block" :style="topic.style">
                         {{ topic.name }}
                     </button>
                 </div>
@@ -54,7 +54,7 @@
                 <h3 class="section-header">NEXT NODES:</h3>
                 <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                     <button v-for="node in childrenNodes" :key="node.id" @click="selectChildNode(node)"
-                        class="tab-block">
+                        class="tab-block" :style="node.style">
                         {{ node.name }}
                     </button>
                 </div>

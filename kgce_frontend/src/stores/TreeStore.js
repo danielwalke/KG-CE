@@ -19,6 +19,12 @@ topic interface {
 
 import { defineStore } from 'pinia'
 import { fetchNodeNeighbors } from '../utils/NodeNeighborHandling.js'
+import { useGraphStore } from './GraphStore.js';
+
+
+function getPathId(path){
+    return path.map(n => n.id).join("->");   
+}
 
 export const useTreeStore = defineStore("TreeStore", {
   state: () => ({
@@ -69,14 +75,25 @@ export const useTreeStore = defineStore("TreeStore", {
         if(node.id in this.nodeIdToNode) return;
         this.nodeIdToNode[node.id] = node;
     },
+    deletePath(path){
+        const pathId = getPathId(path);
+        this.storedPaths = this.storedPaths.filter(p => getPathId(p) !== pathId);
+    },
     async selectNode(node){
         this.selectedNodeId = node.id;
+        this.deletePath(this.currentPath);
         this.currentPath.push(node);
         if(node.id in this.fetchedNodesStore) return;
         await fetchNodeNeighbors(node.id);
+        this.storedPaths.push([...this.currentPath]);
     },
     setStoredPaths(paths){
+        const graphStore = useGraphStore();
         this.storedPaths = paths;
+        graphStore.initializeGraph()
+    },
+    setCurrentPath(path){
+        this.currentPath = path;
     }
   },
 });
