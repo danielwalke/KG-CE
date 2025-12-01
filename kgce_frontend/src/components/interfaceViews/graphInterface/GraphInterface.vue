@@ -13,14 +13,11 @@
 </template>
 
 <script setup>
-import { computed, watch, nextTick } from 'vue'
+import { computed, nextTick } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
-
-import { useChatStore } from '../../../stores/ChatStore.js'
 import { useLayout } from '../../../utils/useLayout.js'
 import { useGraphStore } from '../../../stores/GraphStore.js'
 
-const chatStore = useChatStore()
 const graphStore = useGraphStore()
 
 const nodes = computed({
@@ -51,10 +48,8 @@ const {
 } = useVueFlow()
 
 const { layout } = useLayout()
-onNodeClick((event, node) => {
-  
+onNodeClick((event) => {
   console.log(event.node)
-  chatStore.fetchNodeNeighbors(event.node.id)
 })
 
 async function layoutGraph(direction = "TB") {
@@ -65,11 +60,6 @@ async function layoutGraph(direction = "TB") {
     fitView()
   })
 }
-
-
-
-
-
 </script>
 
 

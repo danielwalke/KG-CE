@@ -21,6 +21,5 @@ export function createWebsocket(){
             chatStore.instructionMessages[chatStore.instructionMessages.length - 1].content += token;
         }
     };
-    chatStore.addChangeToCounter();
     chatStore.setWebsocket(websocket);
 }

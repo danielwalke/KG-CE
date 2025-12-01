@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { NEIGHBORS_EP } from '../constants/Server'
-import { COLORS, TEXT_COLORS } from '../constants/Graph'
 import { useChatStore } from '../stores/ChatStore.js'
 import { useGraphSchemaStore } from '../stores/GraphSchemaStore.js'
 import { useTreeStore } from '../stores/TreeStore.js'
+import { selectNode } from './NodeSelectionHandling.js'
 
 export async function fetchNodeNeighbors(nodeId){
     const treeStore = useTreeStore();
@@ -20,7 +20,7 @@ export async function fetchNodeNeighbors(nodeId){
         "excluded_node_types": excludedNodeTypes,
         "excluded_edge_types": excludedEdgeTypes
     }
-    chatStore.selectNode(nodeId);
+    selectNode(nodeId);
     const neighbor_nodes = await axios.post(NEIGHBORS_EP, inNeighborData);
     const processedNodeNeighbors = []
     for (const n of neighbor_nodes.data["neighbors"]) {
@@ -34,26 +34,7 @@ export async function fetchNodeNeighbors(nodeId){
         }
         treeStore.addNode(node);
         processedNodeNeighbors.push(node);
-        n["data"] = {
-            "label": n["name"],
-        } 
-        n["id"] = n["id"].toString();
-        n["position"] = { x: Math.random() * 400, y: Math.random() * 400 };
-        n["style"] = { backgroundColor: COLORS[n["label"]] || '#CCCCCC', color: TEXT_COLORS[n["label"]] || '#000000' };
-        n["group"] = "neighbor";
-        chatStore.appendNode(n);
-        const edge = {
-            id: `${nodeId}-${n["id"]}`,
-            source: nodeId,
-            target: n["id"]
-        }
-        chatStore.appendEdge(edge);
     }
     treeStore.addNodesForTopicToStore(nodeId, processedNodeNeighbors);
-    console.log("Fetched neighbors for node:", nodeId);
-    console.log(chatStore.nodes);
-
-    
-    chatStore.addChangeToCounter();
     chatStore.setIsLoading(false);
 }

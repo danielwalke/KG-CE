@@ -75,5 +75,8 @@ export const useTreeStore = defineStore("TreeStore", {
         if(node.id in this.fetchedNodesStore) return;
         await fetchNodeNeighbors(node.id);
     },
+    setStoredPaths(paths){
+        this.storedPaths = paths;
+    }
   },
 });

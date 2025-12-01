@@ -2,7 +2,7 @@
     <div class="h-full flex flex-col gap-4 p-4 overflow-hidden text-white">
 
         <div class="flex-none space-y-4 border-b border-white/10 pb-4">
-            
+
             <div v-if="savedPaths.length > 0">
                 <h3 class="section-header text-base">SAVED PATHS:</h3>
                 <div class="flex flex-wrap gap-2">
@@ -14,16 +14,13 @@
 
             <div>
                 <h3 class="section-header text-base">CURRENT PATH:</h3>
-                <div class="flex flex-wrap items-center gap-2 bg-black/40 border border-white/10 p-3 rounded-md min-h-[3rem]">
+                <div
+                    class="flex flex-wrap items-center gap-2 bg-black/40 border border-white/10 p-3 rounded-md min-h-12">
                     <span v-if="currentPath.length === 0" class="text-white/50 italic text-sm">No path started...</span>
-                    
+
                     <template v-for="(node, index) in currentPath" :key="node.id">
                         <span v-if="index > 0" class="text-white/40">/</span>
-                        <button 
-                            class="path-node-btn" 
-                            @click="handlePathClick(node)"
-                            title="Reset path to this node"
-                        >
+                        <button class="path-node-btn" @click="handlePathClick(node)" title="Reset path to this node">
                             {{ node.name }}
                         </button>
                     </template>
@@ -32,17 +29,12 @@
         </div>
 
         <div class="flex-1 overflow-y-auto space-y-6 pr-2 custom-scrollbar">
-            
+
             <section>
                 <h3 class="section-header">START QUERIES:</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <button 
-                        v-for="query in queries" 
-                        :key="query" 
-                        @click="selectQuery(query)"
-                        class="tab-block"
-                        :class="{ 'active': selectedQuery === query }"
-                    >
+                    <button v-for="query in queries" :key="query" @click="selectQuery(query)" class="tab-block"
+                        :class="{ 'active': selectedQuery === query }">
                         {{ query }}
                     </button>
                 </div>
@@ -51,12 +43,7 @@
             <section v-if="selectedQuery">
                 <h3 class="section-header">TOPICS:</h3>
                 <div v-if="topics.length" class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2">
-                    <button 
-                        v-for="topic in topics" 
-                        :key="topic.id" 
-                        @click="selectTopic(topic)"
-                        class="tab-block"
-                    >
+                    <button v-for="topic in topics" :key="topic.id" @click="selectTopic(topic)" class="tab-block">
                         {{ topic.name }}
                     </button>
                 </div>
@@ -66,12 +53,8 @@
             <section v-if="childrenNodes.length">
                 <h3 class="section-header">NEXT NODES:</h3>
                 <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                    <button 
-                        v-for="node in childrenNodes" 
-                        :key="node.id" 
-                        @click="selectChildNode(node)"
-                        class="tab-block"
-                    >
+                    <button v-for="node in childrenNodes" :key="node.id" @click="selectChildNode(node)"
+                        class="tab-block">
                         {{ node.name }}
                     </button>
                 </div>
@@ -102,7 +85,7 @@ function selectQuery(query) {
 }
 
 function selectTopic(topic) {
-    resetPathAndSelect(topic); 
+    resetPathAndSelect(topic);
 }
 
 function selectChildNode(node) {
@@ -176,9 +159,11 @@ function reconstructPath(nodeId, pathArray) {
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-white/20 rounded-full hover:bg-white/40;
 }
