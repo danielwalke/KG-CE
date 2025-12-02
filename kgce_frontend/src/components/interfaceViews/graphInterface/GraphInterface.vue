@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick } from 'vue'
+import { computed, nextTick, onUpdated, watch } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { useLayout } from '../../../utils/useLayout.js'
 import { useGraphStore } from '../../../stores/GraphStore.js'
@@ -33,6 +33,11 @@ const nodes = computed({
 const edges = computed(() => graphStore.getEdges)
 
 layoutGraph("TB")
+
+watch(() => edges.value, () => {
+  console.log("Edges changed, relayouting")
+  layoutGraph("TB")
+})
 
 const { 
   onNodeDragStart, 
