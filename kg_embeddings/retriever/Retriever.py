@@ -39,7 +39,7 @@ class Retriever:
         # Placeholder for retrieval logic
         query = """
         CALL db.index.vector.queryNodes(
-            "embedding_index", 
+            "nameEmbeddingsIdx", 
             $top_k, 
             $query_embedding
         ) 
@@ -114,7 +114,9 @@ class Retriever:
             "node_id": node_id,
             "limit": limit
         }
+        print(excluded_node_types)
         print(parameters)
+        print(query)
         results = self.neo4j_connector.run_query(query, parameters)
         if topic_prompt:
             print("Ranking by similarity to topic prompt embedding")

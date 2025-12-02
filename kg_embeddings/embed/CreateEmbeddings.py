@@ -36,6 +36,53 @@ class CreateEmbeddings:
         
         if current_batch:
             self._process_batch(current_batch)
+            
+    def embed_rna_fast(self, batch_size=256):
+        print("Embedding nodes in batches...")
+        nodes = self.neo4j_connector.run_query("MATCH (n:RNA) WHERE n.names IS NOT NULL RETURN elementId(n) as id, n.ids")
+        
+        current_batch = []
+        
+        for node in tqdm.tqdm(nodes, desc="Embedding RNA nodes (Batch)"):
+            joined_name = ", ".join(node['n.ids']) if node['n.ids'] else "Unknown"
+            
+        
+            current_batch.append({
+                "id": node['id'],
+                "text": joined_name,
+                "names": node['n.ids']
+            })
+            
+            if len(current_batch) >= batch_size:
+                self._process_rna_batch(current_batch)
+                current_batch = []
+        
+        if current_batch:
+            self._process_rna_batch(current_batch)
+            
+    def _process_rna_batch(self, batch_data):
+        
+        texts = [item["text"] for item in batch_data]
+        
+        response = ollama.embed(model="mxbai-embed-large:latest", input=texts)
+        embeddings = response['embeddings']
+        
+        update_params = []
+        for i, item in enumerate(batch_data):
+            update_params.append({
+                "id": item["id"], 
+                "embedding": embeddings[i],
+                "names": item["names"]
+            })
+
+        query = """
+        UNWIND $batch as row
+        MATCH (n) WHERE elementId(n) = row.id
+        SET n.embedding = row.embedding
+        SET n.names = row.names
+        """
+        
+        self.neo4j_connector.run_query(query, parameters={"batch": update_params})
 
     def _process_batch(self, batch_data):
         
@@ -93,6 +140,7 @@ if __name__ == "__main__":
     embedder = CreateEmbeddings()
     # embedder.cleanup_unmapped_nodes()
     #embedder.addBioConceptLabelToAllNodes()
-    embedder.embed_nodes_fast()
+    # embedder.embed_nodes_fast()
+    embedder.embed_rna_fast()
     embedder.createVectorIndex()
     
