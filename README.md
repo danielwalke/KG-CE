@@ -50,7 +50,7 @@ You must run both the backend API and the frontend application simultaneously.
 ### 1. Start the Backend
 From the `server/` directory:
 ```bash
-python main.py
+uvicorn server.main:app --reload
 ```
 
 *This starts the FastAPI server, initializes the Neo4j connection, and loads the graph schema.*
@@ -59,7 +59,7 @@ python main.py
 From the `kgce_frontend/` directory:
 
 ```bash
-npm run serve
+npm run dev
 ```
 
 *Access the interface at `http://localhost:8080` to begin engineering context and exploring the graph.*
