@@ -131,7 +131,7 @@ function deletePath(path){
    Bold, Italic, specific margin
 */
 .section-header {
-    @apply font-bold italic flex items-center gap-2 justify-start mb-2 text-white;
+    @apply font-bold italic flex items-center gap-2 justify-start mb-2 text-black;
 }
 
 /* Matches .instruction-container / .topic-container style:
