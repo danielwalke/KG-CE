@@ -46,6 +46,7 @@ export const useTreeStore = defineStore("TreeStore", {
     graphViewTopic: undefined,
     selectedNodeId: undefined,
     nodeIdToNode: {},
+    searchTerm: "",
   }),
   getters: {
     getQueries(state) {
@@ -69,6 +70,9 @@ export const useTreeStore = defineStore("TreeStore", {
     }
   },
   actions: {
+    setSearchTerm(term) {
+        this.searchTerm = term;
+    },
     setSelectedQuery(query) {
       this.selectedQuery = query;
     },

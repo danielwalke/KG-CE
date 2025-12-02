@@ -2,7 +2,9 @@
     <div class="h-full flex flex-col gap-4 p-4 overflow-hidden text-white">
 
         <div class="flex-none space-y-4 border-b border-white/10 pb-4">
-
+            <div>
+                <input type="text" v-model="searchTerm" placeholder="Type your filter..." class="w-full p-2 rounded-md bg-black/80 border border-white/10 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"/>
+            </div>
             <div v-if="savedPaths.length > 0" class="max-h-48 overflow-y-auto">
                 <h3 class="section-header text-base">SAVED PATHS:</h3>
                 <div class="flex flex-col gap-2">
@@ -73,14 +75,32 @@ const selectedQuery = computed({
     get: () => treeStore.selectedQuery,
     set: (value) => treeStore.setSelectedQuery(value)
 });
-const queries = computed(() => treeStore.getQueries);
+const searchTerm = computed({
+    get: () => treeStore.searchTerm,
+    set: (value) => treeStore.setSearchTerm(value)
+});
+
+const queries = computed(() => treeStore.getQueries.filter(query =>
+    query.toLowerCase().includes(searchTerm.value.toLowerCase())
+));
+
 const currentPath = computed(() => treeStore.getCurrentPath);
-const savedPaths = computed(() => treeStore.storedPaths || []);
-const childrenNodes = computed(() => treeStore.getChildren);
+const savedPaths = computed(() => {
+    const pathsThatIncludeSearchTerm = treeStore.storedPaths.filter(path =>
+        path.some(node => node.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
+    );
+    return pathsThatIncludeSearchTerm || [];
+});
+const childrenNodes = computed(() => {
+    return treeStore.getChildren.filter(node => node.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
+});
 
 const topics = computed(() => {
     if (!selectedQuery.value) return [];
-    return treeStore.queriesToTopics[selectedQuery.value] || [];
+    if (!(selectedQuery.value in treeStore.queriesToTopics)) return [];
+    return treeStore.queriesToTopics[selectedQuery.value].filter(topic =>
+        topic.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+    );
 });
 
 function selectTopic(topic) {
