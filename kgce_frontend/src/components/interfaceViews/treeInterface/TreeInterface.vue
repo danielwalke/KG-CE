@@ -34,7 +34,7 @@
             <section>
                 <h3 class="section-header">START QUERIES:</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <button v-for="query in queries" :key="query" @click="selectQuery(query)" class="tab-block"
+                    <button v-for="query in queries" :key="query" @click="()=>selectedQuery = query" class="tab-block"
                         :class="{ 'active': selectedQuery === query }">
                         {{ query }}
                     </button>
@@ -69,8 +69,10 @@ import { computed, ref } from 'vue';
 import { useTreeStore } from '../../../stores/TreeStore';
 import Delete from '../../icons/Delete.vue';
 const treeStore = useTreeStore();
-const selectedQuery = ref(undefined);
-
+const selectedQuery = computed({
+    get: () => treeStore.selectedQuery,
+    set: (value) => treeStore.setSelectedQuery(value)
+});
 const queries = computed(() => treeStore.getQueries);
 const currentPath = computed(() => treeStore.getCurrentPath);
 const savedPaths = computed(() => treeStore.storedPaths || []);
@@ -80,10 +82,6 @@ const topics = computed(() => {
     if (!selectedQuery.value) return [];
     return treeStore.queriesToTopics[selectedQuery.value] || [];
 });
-
-function selectQuery(query) {
-    selectedQuery.value = query;
-}
 
 function selectTopic(topic) {
     resetPathAndSelect(topic);
@@ -102,7 +100,7 @@ function resetPathAndSelect(node) {
         treeStore.selectNode(node);
         return;
     }
-    treeStore.storedPaths.push([...treeStore.currentPath]);
+    // treeStore.storedPaths.push([...treeStore.currentPath]);
 
     const nodesInPath = [];
     if (node.parent !== undefined) {

@@ -18,6 +18,7 @@ export function sendTopicMessage(){
             group: "start",
             style: {"background-color": "#000000", "color": "#FFFFFF"}
     }
+    treeStore.setSelectedQuery(chatStore.message);
     chatStore.appendTopicMessage(chatStore.message);
     const inTopicData = {
         "prompt": chatStore.message,

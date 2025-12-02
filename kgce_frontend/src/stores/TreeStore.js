@@ -28,6 +28,7 @@ function getPathId(path){
 
 export const useTreeStore = defineStore("TreeStore", {
   state: () => ({
+    selectedQuery: undefined,
     queriesToTopics: {},
     currentPath: [],
     fetchedNodesStore: {},
@@ -58,6 +59,9 @@ export const useTreeStore = defineStore("TreeStore", {
     }
   },
   actions: {
+    setSelectedQuery(query) {
+      this.selectedQuery = query;
+    },
     setTreeData(data) {
       this.treeData = data;
     },
