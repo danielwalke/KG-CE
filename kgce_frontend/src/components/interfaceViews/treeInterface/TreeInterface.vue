@@ -23,7 +23,7 @@
 
                     <template v-for="(node, index) in currentPath" :key="node.id">
                         <span v-if="index > 0" class="text-white/40">/</span>
-                        <button class="path-node-btn" @click="handlePathClick(node)" title="Reset path to this node" :style="node.style">
+                        <button class="path-node-btn btn-effect" @click="handlePathClick(node)" title="Reset path to this node" :style="node.style">
                             {{ node.name }}
                         </button>
                     </template>
@@ -36,7 +36,7 @@
             <section>
                 <h3 class="section-header">START QUERIES:</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <button v-for="query in queries" :key="query" @click="()=>selectedQuery = query" class="tab-block"
+                    <button v-for="query in queries" :key="query" @click="()=>selectedQuery = query" class="tab-block btn-effect"
                         :class="{ 'active': selectedQuery === query }">
                         {{ query }}
                     </button>
@@ -46,7 +46,7 @@
             <section v-if="selectedQuery">
                 <h3 class="section-header">TOPICS:</h3>
                 <div v-if="topics.length" class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-2">
-                    <button v-for="topic in topics" :key="topic.id" @click="selectTopic(topic)" class="tab-block" :style="topic.style">
+                    <button v-for="topic in topics" :key="topic.id" @click="selectTopic(topic)" class="tab-block btn-effect" :style="topic.style">
                         {{ topic.name }}
                     </button>
                 </div>
@@ -55,9 +55,9 @@
 
             <section v-if="childrenNodes.length">
                 <h3 class="section-header">NEXT NODES:</h3>
-                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
                     <button v-for="node in childrenNodes" :key="node.id" @click="selectChildNode(node)"
-                        class="tab-block" :style="node.style">
+                        class="tab-block btn-effect" :style="node.style">
                         {{ node.name }}
                     </button>
                 </div>
@@ -169,5 +169,9 @@ function deletePath(path){
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-white/20 rounded-full hover:bg-white/40;
+}
+
+.btn-effect {
+    @apply cursor-pointer hover:scale-105 lg:hover:scale-110 transition-transform duration-200 ease-in-out text-center
 }
 </style>
