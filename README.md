@@ -25,7 +25,7 @@ Follow these steps to set up the environment and run the application.
 
 1.  **Clone the Repository**
     ```bash
-    git clone [https://github.com/danielwalke/KG-CE.git](https://github.com/danielwalke/KG-CE.git)
+    git clone https://github.com/danielwalke/KG-CE.git
     cd KG-CE
     ```
 
@@ -62,7 +62,7 @@ From the `kgce_frontend/` directory:
 npm run dev
 ```
 
-*Access the interface at `http://localhost:8080` to begin engineering context and exploring the graph.*
+*Access the interface at `http://localhost:5173` to begin engineering context and exploring the graph.*
 
 ## 🛠 Technology Stack
 
