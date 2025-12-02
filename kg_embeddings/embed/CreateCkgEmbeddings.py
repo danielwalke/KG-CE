@@ -19,10 +19,10 @@ class CreateEmbeddings:
             )
         self.neo4j_connector.run_query("""
                                         CREATE VECTOR INDEX node_name_embedding_index IF NOT EXISTS
-                                        FOR (n:NamedEntity)               // Replace 'YourLabel' with your actual label (e.g., :Document)
+                                        FOR (n:NamedEntity) 
                                         ON (n.embedding)
                                         OPTIONS {indexConfig: {
-                                        `vector.dimensions`: 1024,    // Replace with your embedding dimension (e.g., OpenAI is 1536)
+                                        `vector.dimensions`: 1024,    
                                         `vector.similarity_function`: 'cosine'
                                         }}
                                        """)
