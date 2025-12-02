@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { useTreeStore } from "./TreeStore.js";
+import { COLORS, TEXT_COLORS } from "../constants/Graph.js";
 
 
 export const useGraphStore = defineStore("GraphStore", {
@@ -23,13 +24,15 @@ export const useGraphStore = defineStore("GraphStore", {
                 // if(path[0] !== state.graphViewTopic) continue;
                 for(const node of path){
                     if(this.nodes.some(n => n.id === node.id)) continue;
+                    const bgColor = COLORS[node.label] || '#CCCCCC';
+                    const textColor = TEXT_COLORS[node.label] || '#000000';
                     const graph_node = {
                         "id": node.id,
                         "data": {
                                     "label": node.name,
                                 },
                         "position": { x: Math.random() * 400, y: Math.random() * 400 },
-                        "style": { backgroundColor: '#CCCCCC', color: '#000000' },
+                        "style": { backgroundColor: bgColor, color: textColor },
                         "group": node.type,
                     }
                     this.nodes.push(graph_node);
