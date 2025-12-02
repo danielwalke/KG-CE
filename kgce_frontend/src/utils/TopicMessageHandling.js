@@ -13,11 +13,14 @@ export function sendTopicMessage(){
     chatStore.setIsLoading(true);
     const startNode = {
             id: crypto.randomUUID().toString(),
-            data: { label: chatStore.message },
-            position: { x: 250, y: 250 },
-            group: "start",
+            name: chatStore.message,
+            type: "start",
+            label: "Start Node",
+            parent: undefined,
             style: {"background-color": "#000000", "color": "#FFFFFF"}
     }
+    treeStore.addNode(startNode);
+    treeStore.selectNode(startNode);
     treeStore.setSelectedQuery(chatStore.message);
     chatStore.appendTopicMessage(chatStore.message);
     const inTopicData = {
@@ -35,10 +38,10 @@ export function sendTopicMessage(){
                     "label": node["label"],
                     "name": node["name"],
                     "type": "topic",
-                    "parent": undefined,
+                    "parent": startNode["id"],
                     "style": {"background-color": bgColor, "color": textColor}
                 }
-                treeStore.addTopicToQuery(processedNode, startNode["data"]["label"]);
+                treeStore.addTopicToQuery(processedNode, startNode["name"]);
                 treeStore.addNode(processedNode);
             }
         }    

@@ -15,6 +15,14 @@ topic interface {
     type: "topic";
     "parent": undefined;
 }
+
+startNode interface {
+    id: string;
+    name: string;
+    label: string;
+    type: "start";
+    "parent": undefined;
+}
 */
 
 import { defineStore } from 'pinia'
@@ -25,6 +33,8 @@ import { useGraphStore } from './GraphStore.js';
 function getPathId(path){
     return path.map(n => n.id).join("->");   
 }
+
+
 
 export const useTreeStore = defineStore("TreeStore", {
   state: () => ({
@@ -89,9 +99,11 @@ export const useTreeStore = defineStore("TreeStore", {
         this.selectedNodeId = node.id;
         this.deletePath(this.currentPath);
         this.currentPath.push(node);
+        this.storedPaths.push([...this.currentPath]);
+        if(node.type === "start") return;
         if(node.id in this.fetchedNodesStore) return;
         await fetchNodeNeighbors(node.id);
-        this.storedPaths.push([...this.currentPath]);
+        
     },
     setStoredPaths(paths){
         const graphStore = useGraphStore();
@@ -100,6 +112,30 @@ export const useTreeStore = defineStore("TreeStore", {
     },
     setCurrentPath(path){
         this.currentPath = path;
+    },
+    reconstructPath(nodeId, pathArray) {
+        const node = this.nodeIdToNode[nodeId];
+        if (!node) return;
+        pathArray.unshift(node);
+        if (node.parent !== undefined) {
+            this.reconstructPath(node.parent, pathArray);
+        }
+    },
+    resetPathAndSelect(node) {
+        if (this.currentPath.length === 0) {
+            this.selectNode(node);
+            return;
+        }
+        // treeStore.storedPaths.push([...treeStore.currentPath]);
+
+        const nodesInPath = [];
+        console.log(node)
+        if (node.parent !== undefined) {
+            this.reconstructPath(node.parent, nodesInPath);
+        }
+        this.currentPath = nodesInPath;
+        console.log(nodesInPath)
+        this.selectNode(node);
     }
   },
 });

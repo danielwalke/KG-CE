@@ -96,27 +96,7 @@ function handlePathClick(node) {
 }
 
 function resetPathAndSelect(node) {
-    if (treeStore.currentPath.length === 0) {
-        treeStore.selectNode(node);
-        return;
-    }
-    // treeStore.storedPaths.push([...treeStore.currentPath]);
-
-    const nodesInPath = [];
-    if (node.parent !== undefined) {
-        reconstructPath(node.parent, nodesInPath);
-    }
-    treeStore.currentPath = nodesInPath;
-    treeStore.selectNode(node);
-}
-
-function reconstructPath(nodeId, pathArray) {
-    const node = treeStore.nodeIdToNode[nodeId];
-    if (!node) return;
-    pathArray.unshift(node);
-    if (node.parent !== undefined) {
-        reconstructPath(node.parent, pathArray);
-    }
+    treeStore.resetPathAndSelect(node);
 }
 
 function deletePath(path){
