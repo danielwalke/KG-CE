@@ -20,7 +20,7 @@ export function sendTopicMessage(){
             style: {"background-color": "#000000", "color": "#FFFFFF"}
     }
     treeStore.addNode(startNode);
-    treeStore.selectNode(startNode);
+    treeStore.resetPathAndSelect(startNode);
     treeStore.setSelectedQuery(chatStore.message);
     chatStore.appendTopicMessage(chatStore.message);
     const inTopicData = {
