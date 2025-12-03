@@ -76,6 +76,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     full_response += chunk
                     await websocket.send_text(chunk)
             if "I don't know".lower() in full_response.lower() or "I do not know".lower() in full_response.lower():
+                await websocket.send_text(f"[START]")
                 await websocket.send_text("I do not have enough information to answer that question based on the provided knowledge graph, but let me search the web for you.")
                 search_query = prompt_gen(in_instruction, graph_markdown)
                 print(search_query)
