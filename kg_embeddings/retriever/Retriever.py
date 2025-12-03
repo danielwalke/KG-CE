@@ -82,8 +82,8 @@ class Retriever:
 
             query = f"""
                 MATCH (n)-[r]->(m)
-                WHERE elementId(n) = $node_id 
-                AND n.embedding IS NOT NULL
+                WHERE n.embedding IS NOT NULL AND elementId(n) = $node_id 
+                AND m.embedding IS NOT NULL
                 {node_exclusion_clause} 
                 {edge_exclusion_clause}
                 RETURN
@@ -99,10 +99,10 @@ class Retriever:
 
             node_exclusion_clause = f"AND NOT ({' OR '.join(node_exclusion_list)})" if node_exclusion_list else ""
             edge_exclusion_clause = f"AND NOT ({' OR '.join(edge_exclusion_list)})" if edge_exclusion_list else ""
-
+            ## TODO think about whether it makes sense to exclude all nodes without emebddings -> might be helpfful esp. in CKG. -> but then i will not have sorting
             query = f"""
                 MATCH (n)-[r]->(m)
-                WHERE elementId(n) = $node_id {node_exclusion_clause} {edge_exclusion_clause}
+                WHERE n.embedding IS NOT NULL AND m.embedding IS NOT NULL AND elementId(n) = $node_id {node_exclusion_clause} {edge_exclusion_clause}
                 RETURN 
                     elementId(m) as id,
                     reduce(s = "", x IN coalesce(m.names, []) | s + (CASE WHEN s = "" THEN "" ELSE ", " END) + x) as name,
