@@ -61,7 +61,7 @@ class Retriever:
         WHERE elementId(n) IN $node_ids
         OPTIONAL MATCH (n)-[r]->(m)
         WHERE elementId(m) IN $node_ids
-        RETURN n, r, m
+        RETURN n, r, m, head(labels(n)) AS n_label, head(labels(m)) AS m_label
         """
         parameters = {
             "node_ids": node_ids

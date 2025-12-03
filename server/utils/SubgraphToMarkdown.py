@@ -13,10 +13,13 @@ def format_graph_for_llm(data):
     for record in data:
         # 1. Process Source Node (n)
         n = record.get('n')
+        n_label = record.get('n_label')
+        print(n_label)
         if n:
             # Use element_id as unique key
             n_id = " ".join(n["ids"]) 
             n_props = dict(n)
+            n_props["label"] = n_label if n_label else "Unknown"
             del n_props["ids"]  # Remove internal ids from properties
             del n_props["embedding"]  # Remove embedding from properties if exists
             print(n_props)
@@ -28,9 +31,11 @@ def format_graph_for_llm(data):
 
         # 2. Process Target Node (m) - might be None due to OPTIONAL MATCH
         m = record.get('m')
+        m_label = record.get('m_label')
         if m:
             m_id = " ".join(m["ids"]) 
             m_props = dict(m)
+            m_props["label"] = m_label if m_label else "Unknown"
             del m_props["ids"]  # Remove internal ids from properties
             del m_props["embedding"]  # Remove embedding from properties if exists
 
