@@ -1,1 +1,1 @@
-uvicorn server.main:app --reload
+fastapi dev server/main.py
