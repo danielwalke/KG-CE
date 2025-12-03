@@ -8,6 +8,7 @@ from server.meta.InInstruction import InInstruction
 import asyncio
 from server.utils.SubgraphToMarkdown import format_graph_for_llm
 from textwrap import dedent
+from server.utils.Search import return_search_results, prompt_gen, search
 router = APIRouter(redirect_slashes=False)
 
 @router.websocket(SERVER_PREFIX + WEBSOCKET_EP)
@@ -74,5 +75,21 @@ async def websocket_endpoint(websocket: WebSocket):
                 if chunk:
                     full_response += chunk
                     await websocket.send_text(chunk)
+            if "I don't know".lower() in full_response.lower() or "I do not know".lower() in full_response.lower():
+                await websocket.send_text("I do not have enough information to answer that question based on the provided knowledge graph, but let me search the web for you.")
+                search_query = prompt_gen(in_instruction, graph_markdown)
+                print(search_query)
+                search_results = return_search_results(search_query)
+                search_stream_generator = search(search_results, in_instruction.prompt)
+                async for search_chunk in search_stream_generator:
+                    if search_chunk:
+                        print("Search chunk:", search_chunk)
+                        text = getattr(search_chunk, "content", None) or None
+                        if text:
+                            full_response += text
+                            await websocket.send_text(text)
+                
+                
+                
     except WebSocketDisconnect:
         print("Client disconnected")
