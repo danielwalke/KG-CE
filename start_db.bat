@@ -1,1 +1,1 @@
-java -jar BioDWH2-Neo4j-Server-v1.3.2.jar --start C:\Users\danie\git\pKGML\pKGML
+java -Dapoc.import.file.enabled=true -jar BioDWH2-Neo4j-Server-v1.3.2.jar --start C:\Users\danie\git\pKGML\pKGML
