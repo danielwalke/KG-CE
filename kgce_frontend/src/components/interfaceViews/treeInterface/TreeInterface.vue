@@ -55,7 +55,7 @@
 
             <section v-if="childrenNodes.length">
                 <h3 class="section-header">NEXT NODES:</h3>
-                <div><input type="checkbox" @change="() => selectAllChildrenNodes()" :checked="hasSelectedAllChildren" /> Select all</div>
+                <div class="flex gap-2 p-2 font-semibold"><input class="cursor-pointer hover-enlarge" type="checkbox" @change="() => selectAllChildrenNodes()" :checked="hasSelectedAllChildren" id="childrenSelection"/><label for="childrenSelection" class="cursor-pointer text-black hover-enlarge ">Select all</label></div>
                 <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
                     <button v-for="node in childrenNodes" :key="node.id" @click="selectChildNode(node)"
                         class="tab-block btn-effect" :style="node.style">
@@ -193,5 +193,9 @@ function selectAllChildrenNodes(){
 
 .btn-effect {
     @apply cursor-pointer hover:scale-105 lg:hover:scale-110 transition-transform duration-200 ease-in-out text-center
+}
+
+.hover-enlarge {
+    @apply hover:scale-110 ease-in-out duration-300
 }
 </style>
