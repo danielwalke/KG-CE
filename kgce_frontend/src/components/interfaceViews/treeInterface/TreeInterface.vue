@@ -55,6 +55,7 @@
 
             <section v-if="childrenNodes.length">
                 <h3 class="section-header">NEXT NODES:</h3>
+                <div><input type="checkbox" @change="() => selectAllChildrenNodes()" :checked="hasSelectedAllChildren" /> Select all</div>
                 <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
                     <button v-for="node in childrenNodes" :key="node.id" @click="selectChildNode(node)"
                         class="tab-block btn-effect" :style="node.style">
@@ -71,6 +72,12 @@ import { computed, ref } from 'vue';
 import { useTreeStore } from '../../../stores/TreeStore';
 import Delete from '../../icons/Delete.vue';
 const treeStore = useTreeStore();
+
+const hasSelectedAllChildren = computed({
+    get: () => treeStore.hasSelectedAllChildren,
+    set: (value) => treeStore.setHasSelectedAllChildren(value)
+});
+
 const selectedQuery = computed({
     get: () => treeStore.selectedQuery,
     set: (value) => treeStore.setSelectedQuery(value)
@@ -121,6 +128,19 @@ function resetPathAndSelect(node) {
 
 function deletePath(path){
     treeStore.deletePath(path);
+}
+
+function selectAllChildrenNodes(){
+    console.log(hasSelectedAllChildren.value);
+    if(hasSelectedAllChildren.value){
+        console.log("Unselecting all children nodes");
+        hasSelectedAllChildren.value = false;
+        treeStore.unSelectAllChildren(treeStore.getSelectedNode);
+        return;
+    }
+    console.log("Selecting all children nodes");
+    treeStore.selectAllChildren(treeStore.getSelectedNode);
+    hasSelectedAllChildren.value = true;
 }
 </script>
 

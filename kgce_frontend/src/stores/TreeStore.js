@@ -28,7 +28,8 @@ startNode interface {
 import { defineStore } from 'pinia'
 import { fetchNodeNeighbors } from '../utils/NodeNeighborHandling.js'
 import { useGraphStore } from './GraphStore.js';
-
+import { selectNode } from '../utils/NodeSelectionHandling.js';
+import { useChatStore } from './ChatStore.js';
 
 function getPathId(path){
     return path.map(n => n.id).join("->");   
@@ -47,6 +48,7 @@ export const useTreeStore = defineStore("TreeStore", {
     selectedNodeId: undefined,
     nodeIdToNode: {},
     searchTerm: "",
+    hasSelectedAllChildren: false,
   }),
   getters: {
     getQueries(state) {
@@ -67,7 +69,7 @@ export const useTreeStore = defineStore("TreeStore", {
     },
     getChildren(state){
         return state.fetchedNodesStore[state.getSelectedNode] || [];
-    }
+    },
   },
   actions: {
     setSearchTerm(term) {
@@ -99,7 +101,40 @@ export const useTreeStore = defineStore("TreeStore", {
         const graphStore = useGraphStore();
         graphStore.initializeGraph();
     },
+    selectAllChildren(node){
+        const children = this.fetchedNodesStore[node] || [];
+        for(const child of children){
+            const newCurrentPath = [...this.currentPath];
+            newCurrentPath.push(child);
+            this.deletePath(newCurrentPath);
+            this.storedPaths.push([...newCurrentPath]);
+            selectNode(child.id, true);
+        }
+    },
+    unSelectAllChildren(node){
+        console.log("Unselecting all children of node:", node);
+        const chatStore = useChatStore();
+        const children = this.fetchedNodesStore[node] || [];
+        for(const path of this.storedPaths){
+            if (path.length < 2) continue;
+
+            const lastChild = path[path.length -1];
+            const foreLastChild = path[path.length -2];
+            const isLastChildAChildren = children.find(c => c.id === lastChild.id);
+            if(foreLastChild.id !== node) continue;
+
+            if(isLastChildAChildren && foreLastChild.id === node){
+                this.deletePath(path);
+            }
+            const newChatStoreInstructionMessages = chatStore.instructionMessages.filter(msg => {
+                if(!msg["selectedViaAllChildren"]) return true;
+                return (msg["nodeId"] !== lastChild.id)
+            })
+            chatStore.setInstructionMessages(newChatStoreInstructionMessages);
+        }
+    },
     async selectNode(node){
+        this.hasSelectedAllChildren = false;
         this.selectedNodeId = node.id;
         this.deletePath(this.currentPath);
         this.currentPath.push(node);
@@ -140,6 +175,9 @@ export const useTreeStore = defineStore("TreeStore", {
         this.currentPath = nodesInPath;
         console.log(nodesInPath)
         this.selectNode(node);
+    },
+    setHasSelectedAllChildren(value) {
+        this.hasSelectedAllChildren = value;
     }
   },
 });

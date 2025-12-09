@@ -114,6 +114,9 @@ export const useChatStore = defineStore('chatStore', {
             deleteContextInstruction(msg, index);
         }
         this.instructionMessages.splice(index, 1);
+    },
+    setInstructionMessages(messages) {
+        this.instructionMessages = messages;
     }
 }
 })

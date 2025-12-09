@@ -1,6 +1,6 @@
 import { useChatStore } from '../stores/ChatStore.js'
 import { useTreeStore } from '../stores/TreeStore.js'
-export function selectNode(nodeId){
+export function selectNode(nodeId, selectedViaAllChildren = false){
     const chatStore = useChatStore();
     const treeStore = useTreeStore();
     
@@ -11,6 +11,7 @@ export function selectNode(nodeId){
         "content": `Added context about ${selectedNode["name"]} to the conversation.`,
         "type": "context",
         "nodeId": nodeId,
-        "edgeIds": []
+        "edgeIds": [],
+        "selectedViaAllChildren": selectedViaAllChildren
     });    
 }
