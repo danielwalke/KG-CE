@@ -1,7 +1,8 @@
 from kg_embeddings.retriever.Retriever import Retriever
+# from kg_embeddings.retriever.CkgRetriever import Retriever
 from kg_embeddings.Llm import Llm, LLmHistory
 from kg_embeddings.KeywordExtraction import KeywordExtraction
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
 from server.constants.ServerConfig import SERVER_PREFIX
 from server.constants.Endpoints import TOPIC_EP
 from server.meta.InTopic import InTopic
@@ -9,7 +10,7 @@ from server.meta.InTopic import InTopic
 router = APIRouter(redirect_slashes=False)
 
 @router.post(SERVER_PREFIX + TOPIC_EP)
-async def get_topic_nodes(in_topic: InTopic):
+async def get_topic_nodes(request: Request, in_topic: InTopic):
     llm = Llm()
     llm_instance = LLmHistory(llm)
     session_id = llm_instance.initialize_conversation()
@@ -19,7 +20,7 @@ async def get_topic_nodes(in_topic: InTopic):
     keywords = keyword_extractor.extract_keyword(user_input)
     print("Extracted Keywords:", keywords)
 
-    retriever = Retriever()
+    retriever = request.app.state.retriever
     embeddings = retriever.embed_queries(keywords)
     keyword_results = dict()
     for embedding, keyword in zip(embeddings, keywords):

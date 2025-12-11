@@ -1,4 +1,5 @@
 from kg_embeddings.retriever.Retriever import Retriever
+# from kg_embeddings.retriever.CkgRetriever import Retriever
 from kg_embeddings.Llm import Llm, LLmHistory
 from kg_embeddings.KeywordExtraction import KeywordExtraction
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -28,7 +29,7 @@ async def websocket_endpoint(websocket: WebSocket):
             print("Received instruction:", in_instruction.prompt)
             print("Retrieving subgraph for node IDs:", in_instruction.node_ids)
 
-            retriever = Retriever()
+            retriever = websocket.app.state.retriever
             subgraph = retriever.retrieve_subgraph(in_instruction.node_ids)
             graph_markdown = format_graph_for_llm(subgraph)
 

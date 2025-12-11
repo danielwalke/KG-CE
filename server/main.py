@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from kg_embeddings.router.NeoRouter import Neo4Router
 from server.router.HealthRouter import router as HealthRouter
 from server.router.WebsocketRouter import router as WebsocketRouter
 from server.router.NeighborsRouter import router as NeighborsRouter
@@ -19,7 +20,12 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     print("Starting up the server...")
-    neo4j_connector = Neo4jConnector()
+    kg = "ckg"  # or "metaprot", could be made configurable
+    app.state.kg = kg
+    neo4_router = Neo4Router(kg)
+    neo4j_connector = neo4_router.get_neo4j_connector()
+    app.state.neo4j_connector = neo4j_connector
+    app.state.retriever = neo4_router.get_retriever()
     neo4j_schema_query = """
     MATCH (a)-[r]->(b)
     RETURN DISTINCT 
