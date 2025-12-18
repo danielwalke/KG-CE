@@ -34,6 +34,7 @@ Follow these steps to set up the environment and run the application.
     ```bash
     cd server
     pip install -r requirements.txt
+    fastapi dev server/main.py
     ```
 
 3.  **Frontend Setup**
@@ -42,6 +43,17 @@ Follow these steps to set up the environment and run the application.
     cd ../kgce_frontend
     npm install
     ```
+
+3.  **Sart ollama**
+    Just start ollama on port 11434 
+    ```bash
+    ollama serve
+    ```
+
+    It might make sense to increase the context window before ollama serve, e.g., in windows temporarily: 
+     ```bash
+     $env:OLLAMA_CONTEXT_LENGTH="8192"
+     ``` 
 
 ## 🏃 Usage
 
