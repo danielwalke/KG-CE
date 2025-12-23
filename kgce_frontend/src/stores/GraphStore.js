@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { useTreeStore } from "./TreeStore.js";
 import { COLORS, TEXT_COLORS } from "../constants/Graph.js";
-
+import { useChatStore } from "./ChatStore.js";
 
 export const useGraphStore = defineStore("GraphStore", {
     state: () => ({
@@ -62,6 +62,8 @@ export const useGraphStore = defineStore("GraphStore", {
             this.edges = [];
             this.initializeNodes();
             this.initializeEdges();
+            console.log("Graph initialized.");
+
         },
         setNodes(nodes) {
             this.nodes = nodes;

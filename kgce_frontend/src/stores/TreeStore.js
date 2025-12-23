@@ -98,8 +98,7 @@ export const useTreeStore = defineStore("TreeStore", {
     deletePath(path){
         const pathId = getPathId(path);
         this.storedPaths = this.storedPaths.filter(p => getPathId(p) !== pathId);
-        const graphStore = useGraphStore();
-        graphStore.initializeGraph();
+        
     },
     selectAllChildren(node){
         const children = this.fetchedNodesStore[node] || [];
@@ -110,6 +109,8 @@ export const useTreeStore = defineStore("TreeStore", {
             this.storedPaths.push([...newCurrentPath]);
             selectNode(child.id, true);
         }
+        const graphStore = useGraphStore();
+        graphStore.initializeGraph();
     },
     unSelectAllChildren(node){
         console.log("Unselecting all children of node:", node);
@@ -132,6 +133,8 @@ export const useTreeStore = defineStore("TreeStore", {
             })
             chatStore.setInstructionMessages(newChatStoreInstructionMessages);
         }
+        const graphStore = useGraphStore();
+        graphStore.initializeGraph();
     },
     async selectNode(node){
         this.hasSelectedAllChildren = false;
@@ -142,6 +145,8 @@ export const useTreeStore = defineStore("TreeStore", {
         if(node.type === "start") return;
         if(node.id in this.fetchedNodesStore) return;
         await fetchNodeNeighbors(node.id);
+        const graphStore = useGraphStore();
+        graphStore.initializeGraph();
         
     },
     setStoredPaths(paths){

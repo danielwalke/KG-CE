@@ -70,8 +70,10 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useTreeStore } from '../../../stores/TreeStore';
+import { useChatStore } from '../../../stores/ChatStore';
 import Delete from '../../icons/Delete.vue';
 const treeStore = useTreeStore();
+const chatStore = useChatStore();   
 
 const hasSelectedAllChildren = computed({
     get: () => treeStore.hasSelectedAllChildren,
@@ -99,7 +101,12 @@ const savedPaths = computed(() => {
     return pathsThatIncludeSearchTerm || [];
 });
 const childrenNodes = computed(() => {
-    return treeStore.getChildren.filter(node => node.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
+    return treeStore.getChildren.filter(node => {
+        if (!searchTerm.value) return true;
+        if (!node) return false;
+        if (node.name === undefined) return true;
+        return node.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+    })
 });
 
 const topics = computed(() => {
@@ -131,7 +138,6 @@ function deletePath(path){
 }
 
 function selectAllChildrenNodes(){
-    console.log(hasSelectedAllChildren.value);
     if(hasSelectedAllChildren.value){
         console.log("Unselecting all children nodes");
         hasSelectedAllChildren.value = false;

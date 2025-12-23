@@ -23,7 +23,9 @@ export async function fetchNodeNeighbors(nodeId){
         "style": {"background-color": "#000000", "color": "#FFFFFF"}
     }
     selectNode(nodeId);
+    console.log("Fetching neighbors for node:", nodeId);
     const neighbor_nodes = await axios.post(NEIGHBORS_EP, inNeighborData);
+    console.log("Fetched neighbors:", neighbor_nodes.data["neighbors"]);
     const processedNodeNeighbors = []
     for (const n of neighbor_nodes.data["neighbors"]) {
         const bgColor = COLORS[n['label']] || "#888888"
@@ -40,6 +42,7 @@ export async function fetchNodeNeighbors(nodeId){
         treeStore.addNode(node);
         processedNodeNeighbors.push(node);
     }
+    console.log("Processed neighbor nodes:", processedNodeNeighbors);
     treeStore.addNodesForTopicToStore(nodeId, processedNodeNeighbors);
     chatStore.setIsLoading(false);
 }
