@@ -22,6 +22,7 @@ export const useGraphSchemaStore = defineStore('graphSchemaStore', {
     },
     getExcludedNodeTypes(state) {
         const excludedNodeTypes = state.nodeTypes.filter(nt => !state.selectedNodeTypes.includes(nt))
+        // TODO remove
         excludedNodeTypes.push("Publication")
         return excludedNodeTypes;
     },
