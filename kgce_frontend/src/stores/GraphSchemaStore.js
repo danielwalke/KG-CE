@@ -21,7 +21,9 @@ export const useGraphSchemaStore = defineStore('graphSchemaStore', {
         return state.edgeTypes      
     },
     getExcludedNodeTypes(state) {
-        return state.nodeTypes.filter(nt => !state.selectedNodeTypes.includes(nt));
+        const excludedNodeTypes = state.nodeTypes.filter(nt => !state.selectedNodeTypes.includes(nt))
+        excludedNodeTypes.push("Publication")
+        return excludedNodeTypes;
     },
     getExcludedEdgeTypes(state) {
         return state.edgeTypes.filter(et => !state.selectedEdgeTypes.includes(et));      
