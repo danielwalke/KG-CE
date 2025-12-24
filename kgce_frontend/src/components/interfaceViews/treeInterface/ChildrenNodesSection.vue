@@ -29,7 +29,9 @@ const childrenNodes = computed(() => {
         if (!node) return false;
         const isNodeNameNullOrUndefined = node.name === null || node.name === undefined;
         if (isNodeNameNullOrUndefined) return true;
-        return node.name.toLowerCase().includes(treeStore.searchTerm.toLowerCase())
+        const isSearchTermInNodeName = node.name.toLowerCase().includes(treeStore.searchTerm.toLowerCase())
+        const isSearchTermInNodeLabel = node.label && node.label.toLowerCase().includes(treeStore.searchTerm.toLowerCase())
+        return isSearchTermInNodeName || isSearchTermInNodeLabel;
     })
 });
 

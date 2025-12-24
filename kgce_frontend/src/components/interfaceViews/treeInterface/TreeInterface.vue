@@ -83,7 +83,13 @@ const queries = computed(() => treeStore.getQueries.filter(query =>
 const currentPath = computed(() => treeStore.getCurrentPath);
 const savedPaths = computed(() => {
     const pathsThatIncludeSearchTerm = treeStore.storedPaths.filter(path =>
-        path.some(node => node.name.toLowerCase().includes(searchTerm.value.toLowerCase()))
+        path.some(node => {
+            const isNodeNameNullOrUndefined = node.name === null || node.name === undefined;
+            if (isNodeNameNullOrUndefined) return true;
+            const isSearchTermInNodeName = node.name.toLowerCase().includes(treeStore.searchTerm.toLowerCase())
+            const isSearchTermInNodeLabel = node.label && node.label.toLowerCase().includes(treeStore.searchTerm.toLowerCase())
+            return isSearchTermInNodeName || isSearchTermInNodeLabel;
+        })
     );
     return pathsThatIncludeSearchTerm || [];
 });
@@ -91,8 +97,13 @@ const savedPaths = computed(() => {
 const topics = computed(() => {
     if (!selectedQuery.value) return [];
     if (!(selectedQuery.value in treeStore.queriesToTopics)) return [];
-    return treeStore.queriesToTopics[selectedQuery.value].filter(topic =>
-        topic.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+    return treeStore.queriesToTopics[selectedQuery.value].filter(topic =>{
+        const isNodeNameNullOrUndefined = topic.name === null || topic.name === undefined;
+        if (isNodeNameNullOrUndefined) return true;
+        const isSearchTermInNodeName = topic.name.toLowerCase().includes(treeStore.searchTerm.toLowerCase())
+        const isSearchTermInNodeLabel = topic.label && topic.label.toLowerCase().includes(treeStore.searchTerm.toLowerCase())
+        return isSearchTermInNodeName || isSearchTermInNodeLabel;
+    }
     );
 });
 
