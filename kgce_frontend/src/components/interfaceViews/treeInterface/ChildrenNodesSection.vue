@@ -27,7 +27,8 @@ const childrenNodes = computed(() => {
     return treeStore.getChildren.filter(node => {
         if (!treeStore.searchTerm) return true;
         if (!node) return false;
-        if (node.name === undefined) return true;
+        const isNodeNameNullOrUndefined = node.name === null || node.name === undefined;
+        if (isNodeNameNullOrUndefined) return true;
         return node.name.toLowerCase().includes(treeStore.searchTerm.toLowerCase())
     })
 });
