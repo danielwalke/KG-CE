@@ -1,6 +1,13 @@
-
-from neo4j.graph import Graph
-
+import neo4j
+from neo4j.graph import Node, Relationship, Graph
+from kg_embeddings.connector.Neo4jConnector import Neo4jConnector
+neo4j_connector = Neo4jConnector(uri = "bolt://localhost:7687", user="neo4j", password="password")
+node_ids = ['e4bd8ee9-78d3-46c8-bc45-df6fcafe49ef', '4:33efcca6-b242-47c6-b6d5-43811954fdc0:317866', '4:33efcca6-b242-47c6-b6d5-43811954fdc0:317678', '4:33efcca6-b242-47c6-b6d5-43811954fdc0:62335']
+graph = neo4j_connector.driver.execute_query("""MATCH (n)
+        WHERE elementId(n) IN $node_ids
+        OPTIONAL MATCH (n)-[r]->(m)
+        WHERE elementId(m) IN $node_ids
+        RETURN n, r as edge, m, head(labels(n)) AS n_label, head(labels(m)) AS m_label""", {"node_ids": node_ids}, result_transformer_=neo4j.Result.graph)
 def graph_to_markdown(graph):
     mermaid_lines = ["```mermaid", "graph TD"]
     added_names = set()
@@ -55,3 +62,18 @@ def graph_to_markdown(graph):
 
     mermaid_lines.append("```")
     return "\n".join(mermaid_lines)
+
+for record in graph.nodes:
+    del record._properties["embedding"]
+    print(record._properties)
+    
+
+for edge in graph.relationships:
+    nodes = edge._start_node, edge._end_node
+    for node in nodes:
+        print(node._properties["name"])
+    print(edge.type)
+    print(edge._properties)
+    
+markdown_output = graph_to_markdown(graph)
+print(markdown_output)

@@ -20,19 +20,24 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     print("Starting up the server...")
-    kg = "ckg"  # or "metaprot", could be made configurable
+    kg = "ckg"  # ckg or "metaprot", could be made configurable
     app.state.kg = kg
     neo4_router = Neo4Router(kg)
     neo4j_connector = neo4_router.get_neo4j_connector()
     app.state.neo4j_connector = neo4j_connector
     app.state.retriever = neo4_router.get_retriever()
     neo4j_schema_query = """
-    MATCH (a)-[r]->(b)
-    RETURN DISTINCT 
-    head(labels(a)) AS StartNodeType, 
-    type(r) AS EdgeType, 
-    head(labels(b)) AS TargetNodeType
-    ORDER BY StartNodeType, EdgeType
+    CALL apoc.meta.schema()
+    YIELD value
+
+    UNWIND keys(value) AS startLabel
+    UNWIND keys(value[startLabel].relationships) AS relType
+    UNWIND value[startLabel].relationships[relType].labels AS endLabel
+
+    RETURN DISTINCT
+    startLabel AS StartNodeType,
+    relType    AS EdgeType,
+    endLabel   AS TargetNodeType
     """
     results = neo4j_connector.run_query(neo4j_schema_query)
     edge_types = []

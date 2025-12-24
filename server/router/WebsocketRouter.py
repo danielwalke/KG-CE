@@ -7,7 +7,7 @@ from server.constants.ServerConfig import SERVER_PREFIX
 from server.constants.Endpoints import WEBSOCKET_EP
 from server.meta.InInstruction import InInstruction
 import asyncio
-from server.utils.SubgraphToMarkdown import format_graph_for_llm
+from server.utils.SubgraphToMarkdown import graph_to_markdown
 from textwrap import dedent
 from server.utils.Search import return_search_results, prompt_gen, search
 router = APIRouter(redirect_slashes=False)
@@ -31,7 +31,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             retriever = websocket.app.state.retriever
             subgraph = retriever.retrieve_subgraph(in_instruction.node_ids)
-            graph_markdown = format_graph_for_llm(subgraph)
+            graph_markdown = graph_to_markdown(subgraph)
 
             print("Graph markdown prepared, constructing prompt.")
             print(graph_markdown)
