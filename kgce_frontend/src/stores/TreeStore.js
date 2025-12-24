@@ -30,6 +30,7 @@ import { fetchNodeNeighbors } from '../utils/NodeNeighborHandling.js'
 import { useGraphStore } from './GraphStore.js';
 import { selectNode } from '../utils/NodeSelectionHandling.js';
 import { useChatStore } from './ChatStore.js';
+import { markRaw } from 'vue';
 
 function getPathId(path){
     return path.map(n => n.id).join("->");   
@@ -94,6 +95,17 @@ export const useTreeStore = defineStore("TreeStore", {
     addNode(node){
         if(node.id in this.nodeIdToNode) return;
         this.nodeIdToNode[node.id] = node;
+    },
+    addNodes(nodes){
+        console.time("addNodes");
+        const newEntries = {};
+        for(const node of nodes){
+            if(!this.nodeIdToNode[node.id]){
+                newEntries[node.id] = markRaw(node);
+            }
+        }
+        Object.assign(this.nodeIdToNode, newEntries);
+        console.timeEnd("addNodes");
     },
     deletePath(path){
         const pathId = getPathId(path);

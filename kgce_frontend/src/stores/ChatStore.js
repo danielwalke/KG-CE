@@ -6,7 +6,7 @@ import { deleteContextInstruction } from '../utils/DeleteContextHandling.js'
 import { useGraphStore } from './GraphStore.js'
 
 export const useChatStore = defineStore('chatStore', {
-  state: () => ({   message: "Sepsis & Diabetes",
+  state: () => ({   message: "Sepsis metaproteome study", //"Sepsis & Diabetes"
                     websocket: undefined,
                     tokens: [],
                     messages: [],

@@ -53,16 +53,7 @@
                 <div v-else class="text-white/50 italic pl-2">No topics found.</div>
             </section>
 
-            <section v-if="childrenNodes.length">
-                <h3 class="section-header">NEXT NODES:</h3>
-                <div class="flex gap-2 p-2 font-semibold"><input class="cursor-pointer hover-enlarge" type="checkbox" @change="() => selectAllChildrenNodes()" :checked="hasSelectedAllChildren" id="childrenSelection"/><label for="childrenSelection" class="cursor-pointer text-black hover-enlarge ">Select all</label></div>
-                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 lg:gap-4">
-                    <button v-for="node in childrenNodes" :key="node.id" @click="selectChildNode(node)"
-                        class="tab-block btn-effect" :style="node.style">
-                        {{ node.name }}
-                    </button>
-                </div>
-            </section>
+            <ChildrenNodesSection />
         </div>
     </div>
 </template>
@@ -72,13 +63,9 @@ import { computed, ref } from 'vue';
 import { useTreeStore } from '../../../stores/TreeStore';
 import { useChatStore } from '../../../stores/ChatStore';
 import Delete from '../../icons/Delete.vue';
+import ChildrenNodesSection from './ChildrenNodesSection.vue';
 const treeStore = useTreeStore();
-const chatStore = useChatStore();   
 
-const hasSelectedAllChildren = computed({
-    get: () => treeStore.hasSelectedAllChildren,
-    set: (value) => treeStore.setHasSelectedAllChildren(value)
-});
 
 const selectedQuery = computed({
     get: () => treeStore.selectedQuery,
@@ -100,14 +87,6 @@ const savedPaths = computed(() => {
     );
     return pathsThatIncludeSearchTerm || [];
 });
-const childrenNodes = computed(() => {
-    return treeStore.getChildren.filter(node => {
-        if (!searchTerm.value) return true;
-        if (!node) return false;
-        if (node.name === undefined) return true;
-        return node.name.toLowerCase().includes(searchTerm.value.toLowerCase())
-    })
-});
 
 const topics = computed(() => {
     if (!selectedQuery.value) return [];
@@ -121,9 +100,7 @@ function selectTopic(topic) {
     resetPathAndSelect(topic);
 }
 
-function selectChildNode(node) {
-    treeStore.selectNode(node);
-}
+
 
 function handlePathClick(node) {
     resetPathAndSelect(node);
@@ -137,20 +114,10 @@ function deletePath(path){
     treeStore.deletePath(path);
 }
 
-function selectAllChildrenNodes(){
-    if(hasSelectedAllChildren.value){
-        console.log("Unselecting all children nodes");
-        hasSelectedAllChildren.value = false;
-        treeStore.unSelectAllChildren(treeStore.getSelectedNode);
-        return;
-    }
-    console.log("Selecting all children nodes");
-    treeStore.selectAllChildren(treeStore.getSelectedNode);
-    hasSelectedAllChildren.value = true;
-}
+
 </script>
 
-<style scoped>
+<style>
 @reference "../../../style.css";
 
 /* Matches the .message-header style from your chat:
