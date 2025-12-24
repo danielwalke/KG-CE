@@ -14,6 +14,7 @@ export const useChatStore = defineStore('chatStore', {
                     instructionMessages: [],
                     isTopicState: true,
                     isLoading: false,
+                    percentLoading: undefined,
                     isConfigurationOpen: false,
                     currentPath: [],
                     isTreeView: true
@@ -117,6 +118,9 @@ export const useChatStore = defineStore('chatStore', {
     },
     setInstructionMessages(messages) {
         this.instructionMessages = messages;
+    },
+    setPercentLoading(percentLoading){
+        this.percentLoading = percentLoading;
     }
 }
 })

@@ -43,7 +43,7 @@ export async function fetchNodeNeighbors(nodeId){
     });
     console.log("Processed neighbor nodes:", processedNodeNeighbors);
     console.timeEnd("fetchNodeNeighbors");
-    treeStore.addNodes(processedNodeNeighbors);
+    await treeStore.addNodes(processedNodeNeighbors);
     console.log("Added neighbor nodes to TreeStore.");
     treeStore.addNodesForTopicToStore(nodeId, processedNodeNeighbors);
     console.log("Updated TreeStore with new neighbor nodes.");

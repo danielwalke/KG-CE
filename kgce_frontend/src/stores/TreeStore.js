@@ -96,15 +96,18 @@ export const useTreeStore = defineStore("TreeStore", {
         if(node.id in this.nodeIdToNode) return;
         this.nodeIdToNode[node.id] = node;
     },
-    addNodes(nodes){
+    async addNodes(nodes){
         console.time("addNodes");
-        const newEntries = {};
-        for(const node of nodes){
+        const chatStore = useChatStore();
+        for(let i = 0; i < nodes.length; i++){
+            const node = nodes[i]
             if(!this.nodeIdToNode[node.id]){
-                newEntries[node.id] = markRaw(node);
+                this.nodeIdToNode[node.id] = markRaw(node);
             }
+            const percentage = Math.floor(((i + 1) / nodes.length) * 100);
+            chatStore.setPercentLoading(percentage);
+            if (i % 50 === 0) await new Promise(resolve => setTimeout(resolve, 0));
         }
-        Object.assign(this.nodeIdToNode, newEntries);
         console.timeEnd("addNodes");
     },
     deletePath(path){
