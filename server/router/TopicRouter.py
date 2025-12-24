@@ -15,9 +15,12 @@ async def get_topic_nodes(request: Request, in_topic: InTopic):
     llm_instance = LLmHistory(llm)
     session_id = llm_instance.initialize_conversation()
     user_input = in_topic.prompt
+    
 
-    keyword_extractor = KeywordExtraction(llm)
-    keywords = keyword_extractor.extract_keyword(user_input)
+    # keyword_extractor = KeywordExtraction(llm)
+    # keywords = keyword_extractor.extract_keyword(user_input)
+    # keywords.insert(0, user_input)  # Add the full prompt as the first "keyword"
+    keywords = [user_input]
     print("Extracted Keywords:", keywords)
 
     retriever = request.app.state.retriever
