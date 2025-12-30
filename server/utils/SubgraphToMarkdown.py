@@ -1,7 +1,7 @@
 
 from neo4j.graph import Graph
 
-def graph_to_markdown(graph):
+def graph_to_markdown(graph) -> str:
     mermaid_lines = ["```mermaid", "graph TD"]
     added_names = set()
 

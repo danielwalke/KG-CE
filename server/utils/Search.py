@@ -19,8 +19,6 @@ def get_html_from_url(url):
         return None
     
 def get_body_from_html(html_content):
-    
-
     soup = BeautifulSoup(html_content, 'html.parser')
     body = soup.body
     if body:

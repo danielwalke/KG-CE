@@ -7,9 +7,15 @@ from server.constants.ServerConfig import SERVER_PREFIX
 from server.constants.Endpoints import WEBSOCKET_EP
 from server.meta.InInstruction import InInstruction
 import asyncio
+from server.utils.LongGraphAnalyzer import GraphAnalysisAgent
 from server.utils.SubgraphToMarkdown import graph_to_markdown
 from textwrap import dedent
 from server.utils.Search import return_search_results, prompt_gen, search
+import math
+
+def count_tokens_approx(text):
+    return math.ceil(len(text) / 4)
+
 router = APIRouter(redirect_slashes=False)
 
 @router.websocket(SERVER_PREFIX + WEBSOCKET_EP)
@@ -67,29 +73,37 @@ async def websocket_endpoint(websocket: WebSocket):
                 user_prompt=in_instruction.prompt,
                 previous_context=in_instruction.previous_context
             )
+            if True: ##TODO DEBUG MODE ENTFERNEN #count_tokens_approx(formatted_prompt) > 3500:
+                agent = GraphAnalysisAgent()
 
-            stream_generator = llm_instance.run_query(formatted_prompt, session_id)
-            
-            full_response = ""
-            
-            async for chunk in stream_generator:
-                if chunk:
-                    full_response += chunk
-                    await websocket.send_text(chunk)
-            if "I don't know".lower() in full_response.lower() or "I do not know".lower() in full_response.lower():
-                await websocket.send_text(f"[START]")
-                await websocket.send_text("I do not have enough information to answer that question based on the provided knowledge graph, but let me search the web for you.")
-                search_query = prompt_gen(in_instruction, graph_markdown)
-                print(search_query)
-                search_results = return_search_results(search_query)
-                search_stream_generator = search(search_results, in_instruction.prompt)
-                async for search_chunk in search_stream_generator:
-                    if search_chunk:
-                        print("Search chunk:", search_chunk)
-                        text = getattr(search_chunk, "content", None) or None
-                        if text:
-                            full_response += text
-                            await websocket.send_text(text)
+                query = in_instruction.prompt
+                # subsample_subgraph = graph_to_markdown(subgraph, limit_nodes=10, limit_edges=20)
+                result = agent.execute(subgraph, query)
+                print("Final result from agent:", result)
+                await websocket.send_text(result) 
+            else:
+                stream_generator = llm_instance.run_query(formatted_prompt, session_id)
+                
+                full_response = ""
+                
+                async for chunk in stream_generator:
+                    if chunk:
+                        full_response += chunk
+                        await websocket.send_text(chunk)
+                if "I don't know".lower() in full_response.lower() or "I do not know".lower() in full_response.lower():
+                    await websocket.send_text(f"[START]")
+                    await websocket.send_text("I do not have enough information to answer that question based on the provided knowledge graph, but let me search the web for you.")
+                    search_query = prompt_gen(in_instruction, graph_markdown)
+                    print(search_query)
+                    search_results = return_search_results(search_query)
+                    search_stream_generator = search(search_results, in_instruction.prompt)
+                    async for search_chunk in search_stream_generator:
+                        if search_chunk:
+                            print("Search chunk:", search_chunk)
+                            text = getattr(search_chunk, "content", None) or None
+                            if text:
+                                full_response += text
+                                await websocket.send_text(text)
                 
                 
                 
